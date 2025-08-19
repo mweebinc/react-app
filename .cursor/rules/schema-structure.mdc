@@ -1,0 +1,118 @@
+---
+description: Innque API schema organization with field definitions (String, Number, Boolean, Date, Array, Pointer, Relation, ACL).
+globs: 
+alwaysApply: false
+---
+# Schema Structure and Definition
+
+## Overview
+This rule defines schema structure and definition patterns for schema-driven React applications. It covers schema organization, field definitions, data types, and schema design best practices.
+
+## Core Principles
+- **Dynamic Properties**: Backend provides dynamic properties by default for all schemas
+- **Frontend Extensions**: UI-specific properties can be added for dynamic form generation
+- **Runtime Flexibility**: Schema changes take effect without code deployment
+
+## Schema Structure
+
+### Dynamic Properties Concept
+The backend automatically provides dynamic properties for all schemas by default. This means:
+- **Automatic Field Detection**: Backend can infer field types and properties
+- **Default Validation**: Basic validation rules are applied automatically
+- **Permission Inheritance**: Access controls are inherited from collection settings
+- **Extensible Design**: Frontend can extend schemas with UI-specific properties
+
+### Backend Schema (Default)
+The backend provides dynamic properties by default for all schemas:
+
+```json
+{
+  "collection": "MyCollection",
+  "fields": {
+    "field_name": {
+      "type": "String",
+      "required": true
+    }
+  },
+  "permissions": {
+    "create": ["*"],
+    "find": ["*"],
+    "update": ["*"],
+    "delete": ["role:admin"]
+  }
+}
+```
+
+### Frontend Extended Schema (UI Generation)
+Frontend can extend schemas with UI-specific properties for dynamic form generation:
+
+```json
+{
+  "collection": "MyCollection",
+  "fields": {
+    "field_name": {
+      "type": "String",
+      "label": "Field Label",
+      "required": true,
+      "placeholder": "Enter value",
+      "tab": "general",
+      "section": "basic",
+      "col": "w-full md:w-1/2"
+    }
+  },
+  "tabs": {
+    "general": {
+      "label": "General Information"
+    }
+  },
+  "sections": {
+    "basic": {
+      "label": "Basic Information"
+    }
+  },
+  "permissions": {
+    "create": ["role:admin"],
+    "find": ["*"],
+    "update": ["role:admin"],
+    "delete": ["role:admin"]
+  }
+}
+```
+
+## Schema Property Categories
+
+### Backend Properties (Default)
+- `collection` - Collection name
+- `fields` - Field definitions with basic properties
+- `permissions` - Access control rules
+
+### Frontend Extension Properties (Optional)
+- `tabs` - Tab definitions for organizing fields into logical groups with labels and metadata
+- `sections` - Section definitions for sub-grouping fields within tabs for better organization
+
+## Supported Data Types
+- `String` - Alphanumeric text
+- `Number` - Numerical values
+- `Boolean` - True or false values
+- `Date` - Date and time values
+- `Array` - Ordered collections
+- `Pointer` - Reference to another collection record
+- `Relation` - Many-to-many relationships
+- `ACL` - Access Control List
+
+## Field Properties
+
+### Backend Properties (Default)
+- `type` - Data type of the field (String, Number, Boolean, etc.)
+- `target` - Target collection for Pointer types
+- `required` - Whether field is mandatory
+- `default` - Default value for the field
+
+### Frontend Extension Properties (UI Generation)
+- `label` - Display label for the field
+- `placeholder` - Placeholder text for input
+- `format` - Frontend-specific input type (e.g., "email", "password", "tel", "url", "image")
+- `enum` - Array of allowed values for String fields
+- `tab` - Tab identifier to assign field to a specific tab group
+- `section` - Section identifier to assign field to a specific section within a tab
+- `col` - Tailwind column classes for responsive layout

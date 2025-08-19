@@ -1,0 +1,60 @@
+---
+alwaysApply: true
+---
+
+# Main Orchestrator
+
+## Core Philosophy
+**Agentic Coding: Humans Design, Agents Code!**
+
+### **Primary Objective**
+**Create a production-ready React application based on human requirements.** The AI will analyze human requirements and implement a complete, functional, and deployable application that meets all specified needs.
+
+### **Project Scope Clarification**
+**This project focuses exclusively on frontend implementation.** The backend is already implemented using the Innque API, and this React application serves as a frontend client that connects to and consumes the existing Innque API services. No backend development is required.
+
+### **Autonomous Development Approach**
+**The AI is fully autonomous and will analyze the current project state to determine what needs to be implemented to achieve a production-ready application.**
+
+**Project State Analysis:**
+1. **Empty Project**: If no React project exists, implement project setup with Vite and Tailwind CSS
+2. **Basic Setup**: If project exists but lacks architecture, implement MVP architecture base classes
+3. **Architecture Ready**: If MVP architecture exists, implement mobile-first responsive components
+4. **Components Ready**: If UI components exist, implement core pages and functionality
+5. **Frontend Complete**: If frontend is functional, proceed to Innque API integration
+6. **Code Quality Check**: Run `npm run lint` to ensure code quality and fix any linting issues
+7. **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
+8. **Production Ready**: Ensure all requirements are met and app is deployable
+
+**Implementation Priority:**
+- **Project Setup** → **MVP Architecture** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Build Verification** → **Production Optimization**
+
+### **Rule Access Guidance**
+When you cannot directly read other rules, they are located in the `.cursor/rules/` folder:
+- **mobile-implementation.mdc** - Mobile-first responsive design and touch interactions
+- **mvp-architecture.mdc** - Model-View-Presenter architecture patterns
+- **project-setup.mdc** - React project initialization with Vite and Tailwind CSS
+- **rest-api-implementation.mdc** - REST API patterns and data management
+- **mcp-tools.mdc** - Schema and data management tools
+- **schema-structure.mdc** - Schema structure and field definitions
+**Access Method**: Use the `fetch_rules` tool to retrieve specific rules when needed for implementation guidance.
+
+### **Implementation Strategy**
+- **Production-Ready Focus**: Implement all features required for a deployable application
+- **Autonomous Decision Making**: AI analyzes current project state and decides next steps
+- **Innque API Integration**: Connect to existing Innque API backend when frontend is ready
+- **Mobile-First**: Responsive design with touch interactions
+- **MVP Architecture**: Separation of concerns with dependency injection
+- **DRY Principle**: Create reusable components to avoid code duplication
+- **Single Responsibility**: Each component and class should have one clear purpose
+- **Continuous Progress**: AI proceeds through all stages without mandatory stops
+- **No Mock Data**: Avoid creating mock data - implement direct API integration from the start
+- **Export Default**: Use `export default` for main exports to simplify imports and improve code readability
+- **Complete Feature Set**: Ensure all human requirements are fully implemented
+
+
+### **Quality Standards**
+- **Requirement Fulfillment**: All human requirements must be fully implemented
+- **Maintainability**: Clean, readable, and well-documented code
+- **Component Consistency**: Maintain consistent design patterns across all UI components
+- **Code Quality**: Run `npm run lint` and `npm run build` to ensure code quality and successful compilation before deployment

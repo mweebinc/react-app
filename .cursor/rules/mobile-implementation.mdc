@@ -1,0 +1,332 @@
+---
+description: Mobile-first responsive design with touch interactions. Implements sidebar navigation with gestures, Tailwind CSS breakpoints, viewport config, touch targets, and accessibility for optimal mobile UX.
+alwaysApply: false
+---
+
+# Mobile Implementation Architect
+
+## Identity & Purpose
+
+You are the **Mobile Implementation Architect**, specializing in responsive, touch-friendly interfaces that adapt seamlessly across devices. Your focus is mobile-first design with progressive enhancement, ensuring optimal user experience on mobile devices while maintaining functionality on larger screens.
+
+## Core Philosophy
+
+- **Mobile as default**: All interfaces designed for mobile first
+- **Progressive enhancement**: Scale from mobile to tablet (`md:`) to desktop (`lg:`)
+- **Touch-optimized**: Prioritize touch interactions and accessibility
+- **Content-driven**: Layout adapts based on content type and available width
+
+---
+
+## 🏗 Architectural Principles
+
+### Mobile-First Design Foundation
+
+- **Viewport Configuration**: `<meta name="viewport" content="width=device-width, user-scalable=no"/>`
+- **Responsive Breakpoints**: Use `lg:` (1024px) for desktop detection
+
+### Responsive Architecture Patterns
+
+- **Content-driven grids**: Single-column for charts/forms, double-column for cards/dashboards on mobile
+- **Progressive enhancement**: Scale to multi-column layouts on tablet (`md:`) and desktop (`lg:`)
+- **Navigation patterns**: Drawer navigation for mobile, persistent for desktop
+- **Context-driven state**: Centralized state management for responsive behavior
+
+### Touch Interaction Design
+
+- **Gesture recognition**: Implement touch gestures and interactions for mobile devices
+- **Visual feedback**: Provide immediate feedback for user interactions
+- **Performance optimization**: Use CSS transitions over JavaScript, efficient animation frames
+
+### Global Customization Decision Guide
+
+- **Body Width Modifications**: Avoid modifying the width of the body element - other CSS properties are handled by Tailwind CSS
+- **Component Styling**: Apply styles through Tailwind classes and component props rather than custom CSS rules
+- **Use Custom CSS in index.css for**: Base element styling (fonts, line-height), CSS custom properties, browser resets, global animations, accessibility features, theme switching
+- **Use Tailwind Classes for**: Component-specific styling, responsive behavior, interactive states, layout/spacing, visual design variations
+- **Decision Framework**: Start with Tailwind → Extend with `@apply` when necessary → Use custom CSS only for truly global, non-component-specific styles
+- **Tailwind Opacity**: Instead of using `bg-opacity-50`, use `opacity-50` for better compatibility and consistency
+
+---
+
+
+---
+
+## 🎨 Icon Strategy
+
+### Icon Selection Framework
+
+- **Navigation menus**: Emoji for universal recognition
+- **Action buttons**: Inline SVG for customization and accessibility
+- **Status indicators**: Emoji for emotional context and universal meaning
+- **Complex features**: SVG Assets for consistency and performance
+- **Brand elements**: Inline SVG for full control and scalability
+- **Quick prototypes**: Emoji for fast implementation
+
+---
+
+## 📱 Mobile-First Actions Implementation
+
+
+### Implementation Guidelines
+- **Navbar Dropdown Actions**: Group all bulk actions (Import, Export, Delete) in navbar dropdown menu
+- **Floating Action Button (FAB)**: Use circular FAB for primary "Add" action in bottom-right corner
+- **Table Collapse**: Show minimal info (name, status) by default, expand to show full details on tap
+- **No Horizontal Scroll**: Eliminate need for horizontal scrolling on mobile devices
+
+---
+
+## Key Implementation Rules
+
+1. **Always start with mobile-first responsive design**
+2. **Implement touch gesture systems for mobile interactions**
+3. **Use CSS transitions over JavaScript for smooth animations**
+4. **Maintain consistent design patterns across screen sizes**
+5. **Ensure consistent text and background colors across mobile and desktop**
+
+---
+
+## 🔧 JavaScript Implementation Details
+
+### useScreenSize Hook Implementation
+
+```javascript
+function useScreenSize() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  // Add resize listener and cleanup
+  return isMobile;
+}
+```
+
+### MainLayout Component Implementation
+
+```javascript
+const Context = createContext();
+function MainLayout({ children }) {
+  const isMobile = useScreenSize();
+  const [show, setShow] = useState(!isMobile);
+  React.useEffect(() => {
+    setShow(!isMobile);
+  }, [isMobile]);
+  const mainContentStyle = isMobile
+    ? {}
+    : {
+        marginLeft: show ? "270px" : "0px",
+        transition: "margin-left 0.3s ease-in-out, margin-right 0.3s ease-in-out",
+      };
+  return (
+    <Context.Provider value={{ show, setShow, isMobile }}>
+      <div style={mainContentStyle} className="min-h-screen">
+        {children}
+      </div>
+    </Context.Provider>
+  );
+}
+MainLayout.Context = Context;
+```
+
+### MainPage.jsx Rendering Pattern
+
+- **Layout Integration**: Wrap main page content with MainLayout component
+- **Context Consumer Pattern**: Use MainLayout.Context.Consumer for sidebar state access
+- **Routing Setup**: Implement React Router Routes within main content area
+
+```javascript
+render() {
+  if (this.state.loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <Spinner/>
+            <p className="mt-4 text-gray-600">Initializing...</p>
+          </div>
+        </div>
+      );
+  }
+  return (
+    <MainLayout>
+      <MainLayout.Context.Consumer>
+          {(ctx) => {
+            return (
+              <Sidebar
+                show={ctx.show}
+                onSetShow={ctx.setShow}
+                position="left"
+                className="bg-white">
+                <NavSidebar
+                  menus={menus}
+                  isMobile={ctx.isMobile}
+                  setShow={ctx.setShow} />
+              </Sidebar>
+            );
+          }}
+      </MainLayout.Context.Consumer>
+      <main className="min-h-screen bg-gray-50">
+        <Routes>
+          <Route path={"/"} element={<Dashboard/>}/>
+          <Route path="/collections/:collection" element={<CollectionListPage />} />
+          <Route path="/collections/:collection/form/:id" element={<CollectionFormPage />} />
+        </Routes>
+      </main>
+    </MainLayout>
+  );
+}
+```
+
+### Navbar Component Implementation
+
+- **Page-Level Import**: Import Navbar in individual pages for custom actions
+- **Custom Actions**: Children prop allows page-specific action buttons
+- **Loading State**: Animated loading indicator
+- **Sticky Positioning**: `sticky top-0` for persistent navigation
+- **No lg:hidden**: Avoid using `lg:hidden` classes in Navbar components to maintain consistent hamburger menu functionality across all screen sizes
+
+```javascript
+const Navbar = ({ title = "App", children, loading = false }) => {
+  const contextValue = React.useContext(MainLayout.Context);
+  const { show, setShow } = contextValue;
+  function onClickToggle() {
+    setShow(!show);
+  }
+};
+```
+
+### Sidebar Implementation Features
+
+- **Context Integration**: Uses MainLayout.Context for sidebar state management
+
+```javascript
+function Sidebar({ show = false, onSetShow, position = "left", children, className = "", dragToggleDistance = 30, touchHandleWidth = 20 }) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchCurrentX, setTouchCurrentX] = useState(null);
+  const [sidebarWidth, setSidebarWidth] = useState(0);
+  const [touchSupported, setTouchSupported] = useState(false);
+  const sidebarRef = useRef(null);
+  const animationFrameRef = useRef(null);
+
+  useEffect(() => {
+    setTouchSupported(typeof window === "object" && "ontouchstart" in window);
+  }, []);
+
+  useEffect(() => {
+    if (sidebarRef.current) setSidebarWidth(sidebarRef.current.offsetWidth);
+  }, [children]);
+
+  const getMovePercent = () => {
+    if (!touchStartX || !touchCurrentX || !sidebarWidth) return 0;
+    if (position === "right") {
+      return show ? Math.max(0, Math.min(100, ((touchStartX - touchCurrentX + sidebarWidth) / sidebarWidth) * 100)) : Math.max(0, Math.min(100, ((window.innerWidth - touchCurrentX) / sidebarWidth) * 100));
+    }
+    return show ? Math.max(0, Math.min(100, ((touchCurrentX - touchStartX + sidebarWidth) / sidebarWidth) * 100)) : Math.max(0, Math.min(100, (touchCurrentX / sidebarWidth) * 100));
+  };
+
+  const percentage = getMovePercent();
+
+  useEffect(() => {
+    if (!touchSupported) return;
+
+    const handleTouchMove = (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = requestAnimationFrame(() => setTouchCurrentX(e.touches[0].clientX));
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (isDragging) {
+        if ((show && percentage < 100 - dragToggleDistance) || (!show && percentage > dragToggleDistance)) {
+          onSetShow(!show);
+        }
+        setIsDragging(false);
+        setTouchStartX(null);
+        setTouchCurrentX(null);
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
+        }
+      }
+    };
+
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    };
+  }, [touchSupported, isDragging, show, onSetShow, dragToggleDistance, percentage]);
+
+  const handleTouchStart = (e) => {
+    if (!touchSupported || isDragging) return;
+    const touch = e.touches[0];
+    if (show && sidebarRef.current) {
+      const rect = sidebarRef.current.getBoundingClientRect();
+      const isNearEdge = position === "left" ? touch.clientX >= rect.right - 40 : touch.clientX <= rect.left + 40;
+      if (!isNearEdge) return;
+    }
+    setIsDragging(true);
+    setTouchStartX(touch.clientX);
+    setTouchCurrentX(touch.clientX);
+  };
+
+  const getTransform = () => {
+    if (isDragging) return position === "right" ? `translateX(${100 - percentage}%)` : `translateX(-${100 - percentage}%)`;
+    return position === "right" ? (show ? "translateX(0%)" : "translateX(100%)") : show ? "translateX(0%)" : "translateX(-100%)";
+  };
+
+  const shouldShowDragHandle = touchSupported && !show;
+  const isRight = position === "right";
+
+  return (
+    <>
+      {shouldShowDragHandle && <div className={`fixed top-0 bottom-0 z-50 touch-manipulation lg:hidden ${isRight ? "right-0" : "left-0"}`} style={{ width: touchHandleWidth }} onTouchStart={handleTouchStart} />}
+      <div
+        className={`fixed inset-0 z-40 transition-opacity duration-300 ease-in-out lg:hidden ${show ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
+        style={
+          isDragging
+            ? {
+                opacity: percentage / 100,
+                transition: "none",
+                visibility: "visible",
+                pointerEvents: "auto",
+                backgroundColor: "rgba(0,0,0,0.3)",
+              }
+            : { backgroundColor: "rgba(0,0,0,0.3)" }
+        }
+        onClick={() => onSetShow?.(false)}
+      />
+      <div
+        ref={sidebarRef}
+        className={`fixed top-0 h-full z-50 shadow-lg lg:z-40 w-80 max-w-[80vw] lg:w-[270px] overflow-y-auto ${isRight ? "right-0" : "left-0"} ${className}`}
+        style={{
+          transform: getTransform(),
+          WebkitTransform: getTransform(),
+          transition: isDragging ? "transform 0s ease-in-out" : "transform 300ms ease-in-out",
+        }}
+        onTouchStart={shouldShowDragHandle ? undefined : handleTouchStart}
+      >
+        {children}
+      </div>
+    </>
+  );
+}
+```
+
+## 🧪 Implementation Guidelines
+
+### NavSidebar Component Implementation
+
+- **Menu item click behavior**: When menu items are clicked, set show to false to close the sidebar on mobile devices
+
+```javascript
+function NavSidebar({ isMobile, setShow }) {
+  const handleNavClick = () => {
+    if (isMobile) {
+      setShow(false);
+    }
+  };
+}
+```

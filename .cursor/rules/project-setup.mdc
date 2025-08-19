@@ -1,0 +1,79 @@
+---
+description: Setup guide for React applications with Vite and Tailwind CSS using the official Vite plugin without PostCSS dependencies.
+globs: 
+alwaysApply: false
+---
+# Project Setup
+
+
+
+### Key Dependencies
+
+- **react** - Core framework for building user interfaces
+- **react-router-dom** - Client-side routing for React applications
+- **@tailwindcss/vite** - Official Vite plugin for Tailwind CSS integration
+- **tailwindcss** - Utility-first CSS framework for rapid UI development
+- **react-infinite-scroll-component** - Infinite scrolling pagination for large datasets
+
+
+## Quick Setup Commands
+
+### 1. Create Vite Project
+```bash
+npm create vite@latest . -- --template react --
+```
+
+### 2. Install Depedencies
+```bash
+npm install tailwindcss @tailwindcss/vite react-infinite-scroll-component
+```
+
+**Important**: Do NOT install PostCSS or any PostCSS plugins. The `@tailwindcss/vite` plugin handles all CSS processing automatically without requiring PostCSS configuration.
+
+### 3. Configure Vite Plugin
+```javascript
+// vite.config.js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+    open: true
+  }
+})
+```
+
+### 5. Import Tailwind CSS
+```css
+/* src/index.css */
+@import "tailwindcss";
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+@media (min-width: 992px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+```
+
+### 6. Start Development Server
+```bash
+npm run dev
+```

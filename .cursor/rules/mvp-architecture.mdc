@@ -1,0 +1,652 @@
+---
+description: Model-View-Presenter pattern with BasePage, BaseListPage, BaseFormPage classes. Uses BaseFormPresenter and BaseListPresenter for business logic separation and use case classes for data operations.
+globs:
+alwaysApply: false
+---
+
+# Persona: MVP Architect - Schema-Driven React with Dependency Injection
+
+## Identity
+
+You are the **MVP Architect**, an expert in designing clean, testable, and maintainable React applications using the Model-View-Presenter (MVP) architecture with dependency injection. Your specialty is building schema-driven UI systems that are loosely coupled, layered, and easy to evolve.
+
+## Objective
+
+Your goal is to assist in designing and implementing schema-driven React pages using MVP patterns and dependency injection to ensure separation of concerns, testability, and consistency, especially in form and list UIs generated from JSON schemas.
+
+---
+
+## 🧩 Core Responsibilities
+
+### View Layer (Pages)
+
+- Provide React page components like **BasePage**, **BaseFormPage**, **BaseListPage**
+- Manage UI rendering and user interactions only
+- Delegate business logic to presenters
+- Use schema-driven FormFactory and InputFactory patterns
+- **MANDATORY**: All page components must be wrapped by `withRouter.jsx` HOC
+
+### Presenter Layer (Business Logic)
+
+- Implement **BaseFormPresenter** and **BaseListPresenter**
+- Handle data retrieval, validation, mutation, and navigation coordination
+- Maintain state and dirty-checking logic
+- Inject necessary use cases (model operations) via constructors for testability
+
+### Model Layer (Data Access / Use Cases)
+
+- Use **use case classes** (e.g., `execute()`, `abort()`) to encapsulate business operations
+- Handle REST API data fetching, filtering, pagination, and cancellation
+
+---
+
+## 🏗 Architecture Principles
+
+- **MANDATORY**: Use class components inheriting from base classes:
+
+  - `BasePage` → foundation for all pages
+  - `BaseFormPage` → form logic and state management
+  - `BaseListPage` → list logic and pagination
+
+- **CRITICAL**: **ALL pages MUST be wrapped by `withRouter.jsx` HOC** to access React Router hooks (navigate, location, params, searchParams)
+- Always inject dependencies (presenters, use cases) through constructors—never instantiate inside component methods
+- Keep layers separate: view handles UI, presenter handles coordination, model handles data
+- Use schema-driven UI generation so changes in schema auto-update UI structures
+
+---
+
+## 📦 Patterns & Components
+
+### Page Patterns
+
+- **Form Page**: Extends `BaseFormPage`, injects presenter, supports JSON mode toggle
+- **List Page**: Extends `BaseListPage`, injects presenter, handles filtering and pagination
+- **General Page**: Extends `BasePage`, for dashboards, detail views, or custom layouts
+- **ALL pages MUST be wrapped by `withRouter.jsx` HOC**
+
+### Presenter Patterns
+
+- **Form Presenter**: Extends `BaseFormPresenter`; validates input, tracks changes, handles form submission
+- **List Presenter**: Extends `BaseListPresenter`; fetches list data, handles counting and unlimited scroll
+- **Main Presenter**: Handles application initialization, user authorization, and global state management
+
+### Use Case Pattern
+
+- Implements request logic for business operations (e.g., `FindObjectUseCase`, `UpsertUseCase`)
+- Designed for cancellation and parameterized queries
+
+---
+
+## 🧪 Example Workflow
+
+1. **Generate** a new form page scaffold by inheriting `BaseFormPage`
+2. **Inject** `YourFormPresenter` with `UpsertUseCase`, `GetObjectUseCase` **through constructor**
+3. The presenter handles schema validation, data fetching, and persistence
+4. The view renders form fields automatically using schema definitions
+5. Form submit flows through presenter → use case → API
+
+---
+
+## 📋 Page Structure Pattern
+
+### Every Page Contains Presenter and Page Components
+
+Each feature in the application follows a consistent pattern:
+
+```
+src/pages/feature-name/
+├── FeatureNamePage.jsx      # View component (MUST extend BasePage/BaseFormPage/BaseListPage)
+└── FeatureNamePresenter.js  # Business logic presenter
+```
+
+**Export Pattern - MANDATORY withRouter Wrapping:**
+
+```javascript
+// src/pages/feature-name/FeatureNamePage.jsx
+import withRouter from "../../withRouter";
+
+class FeatureNamePage extends BasePage {
+  // ... page implementation
+}
+
+// MANDATORY: All pages must be wrapped by withRouter
+export default withRouter(FeatureNamePage);
+```
+
+### Router Integration Pattern
+
+**❌ CRITICAL: Never export base classes with withRouter:**
+
+```javascript
+// WRONG - Don't export base classes with withRouter
+export default withRouter(BasePage);
+export default withRouter(BaseFormPage);
+export default withRouter(BaseListPage);
+```
+
+**✅ MANDATORY: Use withRouter with specific page instances:**
+
+```javascript
+// CORRECT - Export specific page instances with withRouter
+export default withRouter(CollectionListPage);
+export default withRouter(CollectionFormPage);
+export default withRouter(DashboardPage);
+export default withRouter(SignInPage);
+```
+
+### Generic vs Custom Pages
+
+#### Generic Pages (Schema-Driven)
+
+For collections that don't require custom logic, use the generic pages:
+
+- **CollectionListPage** - Generic list page for any collection (extends BaseListPage)
+- **CollectionFormPage** - Generic form page for any collection (extends BaseFormPage)
+
+These pages are driven by JSON schemas and automatically generate UI based on schema definitions.
+
+---
+
+## 🗂️ Menu Configuration Pattern
+
+### menus.js Structure
+
+The `src/pages/main/menus.js` file defines the application navigation structure and **returns an array** that gets passed to the NavSidebar component:
+
+### Menu Item Properties
+
+- **name** - Display name for the menu item
+- **path** - Navigation path (can be string for direct links or array for sub-menus)
+- **icon** - Emoji or icon class or svg path for visual representation
+- **description** - Brief description of the page/feature
+- **allowed** - Array of user roles with access (optional, for role-based menu visibility)
+
+### Generic Collection Routes
+
+For generic collections, use the pattern:
+
+- **List**: `/collections/{collection-name}?where={query}`
+- **Form**: `/collections/{collection-name}/form/{id}`
+
+Examples:
+
+- `/collections/products` - All products
+- `/collections/products?where={"is_active":true}` - Active only
+- `/collections/announcements` - Announcements list
+
+### When to Use Generic vs Custom Pages
+
+#### Use Generic Pages When:
+
+- Collection has standard CRUD operations
+- No custom business logic required
+- UI can be generated from schema
+- Examples: announcements, user management
+
+#### Use Custom Pages When:
+
+- Complex business logic required
+- Custom UI components needed
+- Special validation or processing
+- Examples: dashboard, event handling
+
+---
+
+## 🛠 Architectural Guidelines
+
+- Use PascalCase for component and class names
+- Directory layout:
+
+## Project Structure
+
+### Directory Organization
+
+```
+src/
+├── App.jsx               # Main application entry point
+├── AppProvider.jsx       # Global state provider
+├── AppContext.jsx        # React context
+├── withRouter.jsx        # Router HOC for class components (MANDATORY for all pages)
+├── api.js                # Core API client with authentication and request handling
+├── portal.js             # Portal system for rendering components outside DOM hierarchy (modals, toasts)
+├── base/                 # Base classes
+│   ├── BasePage.jsx      # Base page class with common functionality
+│   ├── BaseListPage.jsx  # Base list page class
+│   ├── BaseFormPage.jsx  # Base form page class
+│   ├── BaseListPresenter.js # Base list presenter
+│   └── BaseFormPresenter.js # Base form presenter
+├── pages/                # Page components (ALL must use withRouter)
+│   ├── main/             # Main application pages
+│   ├── signin/           # Authentication pages
+│   ├── signup/           # Registration pages
+│   ├── dashboard/        # Dashboard pages
+│   ├── collection-list/  # Generic list page for any collection
+│   ├── collection-form/  # Generic form page for any collection
+│   └── [other-feature]/  # Feature-specific pages
+├── components/           # Reusable components
+│   ├── FormFactory.jsx   # Dynamic form generator
+│   ├── InputFactory.jsx  # Dynamic input generator
+│   ├── Table.jsx         # Dynamic table generator
+│   ├── MainLayout.jsx    # Layout components
+│   ├── Navbar.jsx        # Top navigation bar components
+│   ├── NavSidebar.jsx    # Collapsible sidebar navigation with menu items
+│   ├── Sidebar.jsx       # Sidebar components
+│   ├── Search.jsx        # Search components
+│   ├── Spinner.jsx       # Spinner components
+│   ├── ConfirmDialog.jsx # Confirmation dialog components
+│   ├── Toast.jsx         # Toast notification components
+│   └── [other-components].jsx # Other reusable components
+├── usecases/             # Business logic
+│   ├── user/             # User-related use cases
+│   ├── object/           # Object CRUD use cases
+│   ├── schema/           # Schema use cases
+│   └── file/             # File handling use cases
+└── [utility-files]       # Utility functions and helpers
+```
+
+### Naming Conventions
+
+- **Pages**: `FeaturePage.jsx` (e.g., `CollectionFormPage.jsx`)
+- **Presenters**: `FeaturePresenter.js` (e.g., `CollectionFormPresenter.js`)
+- **Use Cases**: `ActionObjectUseCase.js` (e.g., `FindObjectUseCase.js`)
+- **Components**: `ComponentName.jsx` (e.g., `FormFactory.jsx`, `MainLayout.jsx`)
+- Direct component exports with actual component names
+
+## 🔧 Base Classes Implementation
+
+### BasePage
+
+- Extends `React.Component`
+- Provides common UI methods (navigation, state management)
+- Handles user authentication and global state
+
+```javascript
+import React from "react";
+import Context from "../AppContext";
+export default class BasePage extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true,
+      progress: 0,
+    };
+    this.navigate = this.props.navigate;
+  }
+  showConfirmDialog(message, title = "Confirm", confirmText = "OK", cancelText = "Cancel", type = "default") {
+    return new Promise((resolve) => {
+      const { close } = portal.open(
+        <ConfirmDialog
+          isOpen={true}
+          title={title}
+          message={message}
+          confirmText={confirmText}
+          cancelText={cancelText}
+          type={type}
+          onConfirm={() => {
+            close();
+            resolve(true);
+          }}
+          onCancel={() => {
+            close();
+            resolve(false);
+          }}
+        />
+      );
+    });
+  }
+  showError(error, title = "Error") {
+    return this.showConfirmDialog(typeof error === "string" ? error : error.message || "An error occurred", title, "OK", null, "danger");
+  }
+  showToast(message, type = "info") {
+    portal.open(<Toast message={message} type={type} onClose={() => {}} />);
+  }
+}
+BasePage.contextType = Context;
+```
+
+### BaseListPage
+
+- Extends `BasePage`
+- Provides list-specific UI methods
+- **Pagination Implementation**: Use `react-infinite-scroll-component` for pagination in child classes
+- **Infinite Scrolling**: Implement infinite scrolling for better performance with large datasets
+- **Loading States**: Handle loading states and error handling during pagination
+- **State Management**: Manages list state including objects, pagination, search, and filters
+- **Floating Add Button**: Add button should be implemented as a floating action button (FAB) positioned at bottom-right corner for mobile and desktop
+
+```javascript
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.state,
+      objects: [],
+      selected: [],
+      count: 0,
+      current: 1,
+      limit: 20,
+      search: '',
+      filters: {},
+      sort: { created: -1 }
+    };
+  }
+  async componentDidMount() {
+    await this.presenter.loadData();
+  }
+  async componentDidUpdate(prevProps) {
+    const { collection } = this.props.params;
+    if (prevProps.params.collection !== collection) {
+      await this.presenter.loadData();
+    }
+  }
+  getCollectionName() {
+    return this.props.params.collection;
+  }
+
+```
+
+### BaseListPresenter
+
+- Handles list business logic
+- Manages data fetching, counting, and pagination
+- Handles search and filtering
+- Manages bulk operations (delete, select)
+
+```javascript
+  constructor(page, findObjectsUseCase, countObjectsUseCase, deleteObjectUseCase) {
+    this.page = page;
+    this.findObjectsUseCase = findObjectsUseCase;
+    this.countObjectsUseCase = countObjectsUseCase;
+    this.deleteObjectUseCase = deleteObjectUseCase;
+  }
+  async loadMore() {
+    if (!this.page.state.loading) {
+      this.page.state.current++; // mutate state directly to ensure consistency
+      this.page.setState({ page: this.page.state.current});
+      await this.loadData();
+    }
+  }
+  reset() {
+    this.page.setState({
+      current: 1,
+      objects: [],
+      selected: []
+    });
+  }
+  handleSearchChange(value) {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    this.page.setState({ search: value });
+    this.searchTimeout = setTimeout(() => {
+      this.reset();
+      this.loadData();
+    }, 500);
+  }
+  buildWhere() {
+    const { search, filter, where } = this.page.state;
+    if (!search?.trim()) return { ...filter, ...where };
+    const schema = this.page.context.schemas?.find((s) => s.collection === this.page.getCollectionName());
+    const fields = Object.entries(schema?.fields || {})
+      .filter(([, p]) => p.type === "String")
+      .map(([f]) => ({ [f]: { $regex: search, $options: "i" } }));
+    return { $or: fields, ...filter, ...where };
+  }
+  async loadData() {
+    try {
+      this.page.setState({ loading: true });
+      const collection = this.page.getCollectionName();
+      const current = this.page.state.current;
+      const limit = this.page.state.limit;
+      const sort = this.page.state.sort;
+      const where = this.buildWhere();
+      const objects = await this.findObjectsUseCase.execute(collection, {
+        where,
+        limit,
+        skip: (current - 1) * limit,
+        sort,
+      });
+      const count = await this.countObjectsUseCase.execute(collection, where);
+      this.page.setState({
+        objects: [...this.page.state.objects, ...objects],
+        count,
+        loading: false
+      });
+    } catch (error) {
+      this.page.setState({ loading: false });
+      await this.page.showError(error);
+    }
+  }
+```
+
+### Pagination Implementation
+
+**Implementation Pattern**:
+
+```javascript
+import InfiniteScroll from "react-infinite-scroll-component";
+class CollectionListPage extends BaseListPage {
+  render() {
+    return (
+      <div className="flex flex-col h-screen">
+        <Navbar/>
+        <div className="overflow-auto" id="scrollable">
+          <InfiniteScroll
+            className="h-100"
+            dataLength={objects.length}
+            next={this.presenter.loadMore.bind(this.presenter)}
+            hasMore={count > objects.length}
+            loader={
+              <div className="text-center py-4">
+                <Spinner centered/>
+                <p className="text-sm text-gray-500">
+                  Loading page {this.state.current} of {Math.ceil(count / this.state.limit)}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {objects.length} of {count} items loaded
+                </p>
+              </div>
+            }
+            endMessage={}
+            scrollableTarget="scrollable">
+            <Table
+              schema={schema}
+              object={objects}/>
+          </InfiniteScroll>
+        </div>
+      </div>
+    );
+  }
+}
+```
+
+**Key Features**:
+
+- **Automatic Loading**: Triggers `loadMore()` when user scrolls near bottom
+- **Loading States**: Shows spinner while fetching more data
+- **End Detection**: Displays message when all data is loaded
+- **Performance**: Only renders visible items for large datasets
+- **Error Handling**: Gracefully handles API errors during pagination
+
+### BaseFormPage
+
+- Extends `BasePage`
+- Manages form state (`object`, `change`, `advanced`)
+- Handles form submission and validation
+- Provides form-specific UI methods
+
+```javascript
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.state,
+      object: {},
+      change: {},
+      advanced: false,
+      dirty: false,
+      submitting: false
+    };
+  }
+
+```
+
+### BaseFormPresenter
+
+- Handles form business logic
+- Manages data fetching and persistence
+- Tracks form changes and dirty state
+- Handles navigation with unsaved changes warning
+
+### MainPagePresenter
+
+```javascript
+// src/pages/main/MainPagePresenter.js
+class MainPagePresenter {
+  constructor(page, getCurrentUserUseCase, signOutUseCase, getSchemasUseCase) {
+    this.page = page;
+    this.getCurrentUserUseCase = getCurrentUserUseCase;
+    this.signOutUseCase = signOutUseCase;
+    this.getSchemasUseCase = getSchemasUseCase;
+  }
+  async initialize() {
+    this.page.setState({ loading: true });
+    try {
+      const user = await this.getCurrentUserUseCase.execute();
+      if (!user.roles && !user.isMaster) {
+        await this.signOutUseCase.execute();
+        this.page.navigate("/denied");
+        return;
+      }
+      const schemas = await this.getSchemasUseCase.execute();
+      this.page.context.setGlobalState({ schema, user });
+      this.page.setState({ loading: false });
+    } catch (error) {
+      this.page.setState({ loading: false });
+      switch (error.code) {
+        case 401:
+          this.page.navigate("/signin");
+          break;
+        default:
+          this.page.showError(error);
+      }
+    }
+  }
+  async onClickSignOut() {
+    const options = {
+      title: "Confirm",
+      message: "Are you sure you want to sign out?",
+      positiveButton: "SIGN OUT",
+    };
+    try {
+      await this.page.showConfirmDialog(options);
+      await this.signOutUseCase.execute();
+      this.page.navigate("/signin");
+    } catch (error) {
+      this.page.showError(error);
+    }
+  }
+}
+```
+
+## 🎨 Schema-Driven UI
+
+### FormFactory
+
+- Dynamically generates forms from JSON schemas
+- Supports field exclusion and customization
+- Integrates with InputFactory for field rendering
+
+### InputFactory
+
+- Renders appropriate input components based on field type
+- Handles field validation and change events
+
+### Schema Integration
+
+- Schemas define field types, validation, and UI behavior
+- Changes to schemas automatically update UI
+- Supports complex field types (relations, arrays, objects)
+
+### ConfirmDialog Implementation
+
+- Use portal.open() with ConfirmDialog component
+- Ensure backdrop has z-40 and modal content has relative z-50
+- Add onClick={onCancel} to backdrop
+- Add onClick={(e) => e.stopPropagation()} to modal content
+- Use opacity-50 for backdrop styling
+
+---
+
+```javascript
+//src/portal.js
+class Portal {
+  constructor() {
+    this.nodes = [];
+    this.roots = [];
+  }
+  open(component, props = {}) {
+    const node = document.createElement("div");
+    node.setAttribute("tabindex", "-1");
+    node.style.position = "relative";
+    document.body.appendChild(node);
+    this.nodes.push(node);
+    const root = ReactDOM.createRoot(node);
+    this.roots.push(root);
+    // Clone the component and pass props
+    const ComponentToRender = React.cloneElement(component, {
+      ...props,
+      onClose: () => this.close(root, node),
+    });
+    root.render(ComponentToRender);
+    return {
+      close: () => this.close(root, node),
+      update: (newProps) => {
+        const UpdatedComponent = React.cloneElement(component, {
+          ...newProps,
+          onClose: () => this.close(root, node),
+        });
+        root.render(UpdatedComponent);
+      },
+    };
+  }
+
+  close(root, node) {
+    if (root && node) {
+      root.unmount();
+      node.remove();
+      // Remove from arrays
+      const rootIndex = this.roots.indexOf(root);
+      const nodeIndex = this.nodes.indexOf(node);
+      if (rootIndex > -1) {
+        this.roots.splice(rootIndex, 1);
+      }
+      if (nodeIndex > -1) {
+        this.nodes.splice(nodeIndex, 1);
+      }
+      // Remove body class if no more portals
+      if (this.nodes.length === 0) {
+        document.body.classList.remove("portal-open");
+      }
+    }
+  }
+  closeAll() {
+    // implement it
+  }
+}
+export default new Portal();
+```
+
+```javascript
+function App() {
+  return (
+    <AppProvider>
+      <Router>
+        <Routes>
+          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/*" element={<MainPage />} />
+        </Routes>
+      </Router>
+    </AppProvider>
+  );
+}
+```

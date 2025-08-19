@@ -1,0 +1,548 @@
+---
+description: Innque API integration patterns for CRUD operations, Includes security best practices and resilience strategies for connecting React frontend to Innque API backend.
+globs:
+alwaysApply: false
+---
+
+## Objective
+
+Guide REST API implementation through **generic, reusable usecases** that eliminate redundancy and enable creative adaptation. Focus on **pattern recognition** and **purpose-driven design** rather than creating domain-specific implementations.
+
+---
+
+## 🧩 Core Principles
+
+### Generic Over Specific
+
+- **Use generic use cases** (e.g., `CreateObjectUseCase`) instead of domain-specific ones (e.g., `CreateProductUseCase`)
+- **Adapt existing patterns** rather than creating new implementations
+- **Recognize common operations** across different domains and reuse them
+
+
+### Data Operations
+
+- Implement CRUD operations for collections
+- Handle complex querying with filtering, pagination, and sorting
+- Manage file uploads and downloads
+- Coordinate schema management and validation
+
+### Security & Authentication
+
+- Implement JWT-based authentication flows
+- Manage secure cookie storage and token lifecycle
+- Handle user registration, login, and logout
+- Ensure proper authorization headers and access control
+
+### Error Handling & Resilience
+- Implement comprehensive error handling patterns
+- Design retry mechanisms with exponential backoff
+- Handle network timeouts and connection failures
+- Provide graceful degradation and recovery strategies
+
+---
+
+## 🏗 API Architecture
+
+### Base Configuration
+
+#### API Base URL
+
+```
+https://api.innque.com/v1
+```
+
+#### Required Headers
+
+```
+Content-Type: application/json
+```
+
+#### Optional Headers
+
+```
+X-Application-Id: your-application-id  // Only used when no JWT token is available
+```
+
+#### Authentication Headers
+
+```
+Authorization: Bearer {jwt_token}  // For user-specific operations
+X-Master-Key: your-master-key      // For debugging only - bypasses security
+```
+
+---
+
+## 📦 API Endpoints Reference
+
+### Collections API
+
+#### Create Object
+
+```
+POST /collections/{collection_name}
+Body: {object_data}
+```
+
+#### Get All Objects
+
+```
+GET /collections/{collection_name}
+Query Parameters:
+  - where: JSON string (filtering conditions)
+  - limit: number (max results)
+  - skip: number (pagination offset)
+  - sort: JSON string (sorting criteria)
+  - includes: JSON string (array of related object names)
+  - keys: JSON string (array of field names to include)
+```
+
+#### Query Parameters Reference
+
+##### Filtering (where parameter)
+
+```json
+// Simple equality
+{"name": "sugar"}
+
+// Range queries
+{"price": {"$gt": 10, "$lt": 100}}
+// Array operations
+{"category": {"$in": ["Electronics", "Books"]}}
+// Complex queries
+{
+  "$and": [
+    {"price": {"$gte": 50}},
+    {"category": "Electronics"},
+    {"isActive": true}
+  ]
+}
+```
+##### Sorting (sort parameter)
+```json
+{
+  "created": -1, // Descending
+  "name": 1 // Ascending
+}
+```
+
+#### Get Object by ID
+```
+GET /collections/{collection_name}/{object_id}
+```
+
+#### Update Object
+
+```
+PUT /collections/{collection_name}/{object_id}
+Body: {updated_object_data}
+```
+
+#### Delete Object
+
+```
+DELETE /collections/{collection_name}/{object_id}
+```
+
+#### Count Objects
+
+```
+GET /count/{collection_name}
+Query Parameters:
+  - where: JSON string (filtering conditions)
+Response:
+{
+  "count": 10
+}
+```
+
+### Users API
+
+#### Sign Up
+
+```
+POST /signup
+Body: {
+  "username": "string",
+  "password": "string"
+}
+```
+
+#### Sign In
+
+```
+POST /signin
+Body: {
+  "username": "string",
+  "password": "string"
+}
+```
+
+#### Get Current User
+
+```
+GET /me
+Authorization: Bearer {jwt_token}
+```
+
+#### Sign Out
+
+```
+POST /signout
+Authorization: Bearer {jwt_token}
+```
+
+### Files API
+
+#### Upload File
+
+```
+POST /files/{filename}
+Content-Type: {file_content_type}
+Body: {file_blob}
+```
+
+#### Download File
+
+```
+GET /files/{application-id}/{filename}
+```
+
+### Schemas API
+
+#### Create Schema
+
+```
+POST /schemas
+Body: {schema_definition}
+```
+
+#### Get Schema
+
+```
+GET /schemas/{schema_name}
+```
+
+#### Get All Schemas
+
+```
+GET /schemas
+Query Parameters:
+  - where: JSON string (filtering conditions)
+```
+
+#### Update Schema
+
+```
+PUT /schemas/{schema_name}
+Body: {updated_schema_definition}
+```
+
+#### Delete Schema
+
+```
+DELETE /schemas/{schema_name}
+```
+
+---
+
+## 🚨 Error Response Codes
+
+- **400**: Bad Request - Invalid request data
+- **401**: Unauthorized - Missing or invalid authentication
+- **403**: Forbidden - Insufficient permissions
+- **404**: Not Found - Resource doesn't exist
+- **500**: Internal Server Error - Server error
+
+---
+
+## 🔧 Implementation Patterns
+
+### Modern API Client Implementation
+
+```javascript
+// api.js
+
+const API_BASE = "https://api.innque.com/v1";
+const APP_ID = import.meta.env.VITE_APP_ID || "your-application-id";
+const MASTER_KEY = import.meta.env.VITE_MASTER_KEY; // only for debug routes
+const DEFAULT_RETRIES = 3; // Number of retry attempts
+
+// —————— Native Cookie Helpers ——————
+function setCookie(name, value, days = 365) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = [
+    `${encodeURIComponent(name)}=${encodeURIComponent(value)}`,
+    `expires=${expires}`,
+    `path=/`,
+    `Secure`, // send only over HTTPS
+    `SameSite=Strict`, // adjust: Lax or None as needed
+  ].join("; ");
+}
+function getCookie(name) {
+  return document.cookie.split("; ").reduce((value, pair) => {
+    const [key, val] = pair.split("=");
+    return decodeURIComponent(key) === name ? decodeURIComponent(val) : value;
+  }, null);
+}
+function deleteCookie(name) {
+  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+}
+
+// —————— JWT Helpers ——————
+function saveToken(token) {
+  setCookie("jwt", token); // defaults to 365 days
+}
+function getToken() {
+  return getCookie("jwt");
+}
+function clearToken() {
+  deleteCookie("jwt");
+}
+// —————— Utility: Delay for backoff ——————
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+// —————— Core Fetch Wrapper with Retry ——————
+async function request(path, { method = "GET", body = null, headers: customHeaders, retries = DEFAULT_RETRIES, timeout = 30000, signal } = {}) {
+  const url = `${API_BASE}${path}`;
+  // Recursive dispatch function
+  async function dispatch(attempt) {
+    const headers = new Headers(customHeaders);
+    // Only set default Content-Type if not already set and body is not a Blob
+    if (!headers.has("Content-Type") && !(body instanceof Blob)) {
+      headers.set("Content-Type", "application/json");
+    }
+    const token = getToken();
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    } else {
+      headers.set("X-Application-Id", APP_ID);
+    }
+    if (MASTER_KEY) {
+      headers.set("X-Master-Key", MASTER_KEY);
+    }
+    const opts = { method, headers };
+    if (body != null) {
+      // Only stringify if it's not already a string or Blob
+      opts.body = body instanceof Blob || typeof body === "string" ? body : JSON.stringify(body);
+    }
+    if (signal) {
+      opts.signal = signal;
+    }
+    try {
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`Request timeout after ${timeout}ms`)), timeout);
+      });
+      // Create fetch promise
+      const fetchPromise = fetch(url, opts);
+      // Race between fetch and timeout
+      const res = await Promise.race([fetchPromise, timeoutPromise]);
+      // Retry on 5xx
+      if (res.status >= 500 && attempt < retries) {
+        const backoff = Math.pow(2, attempt) * 200 + Math.random() * 100;
+        await delay(backoff);
+        return dispatch(attempt + 1);
+      }
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        if (errBody.message === "Invalid session token") {
+          clearToken();
+        }
+        throw new Error(errBody.message || `${res.status} ${res.statusText}`);
+      }
+      return res.status === 204 ? null : res.json();
+    } catch (err) {
+      // Retry on timeout or network errors
+      if ((err instanceof TypeError || /network/i.test(err.message) || /timeout/i.test(err.message)) && attempt < retries) {
+        const backoff = Math.pow(2, attempt) * 200 + Math.random() * 100;
+        await delay(backoff);
+        return dispatch(attempt + 1);
+      }
+      throw err;
+    }
+  }
+  return dispatch(0);
+}
+
+// —————— Collections API ——————
+export const createObject = (collection, data, options) => {
+  if (!collection) throw new Error("Collection name is required");
+  if (!data || typeof data !== "object") throw new Error("Data must be an object");
+  return request(`/collections/${collection}`, { method: "POST", body: data, ...options });
+};
+export const getObjects = (collection, { where, limit, skip, sort, includes, keys } = {}, options) => {
+  const qp = new URLSearchParams();
+  if (where) qp.set("where", JSON.stringify(where));
+  if (limit) qp.set("limit", limit);
+  if (skip) qp.set("skip", skip);
+  if (sort) qp.set("sort", JSON.stringify(sort));
+  if (includes) qp.set("includes", JSON.stringify(includes));
+  if (keys) qp.set("keys", JSON.stringify(keys));
+  return request(`/collections/${collection}?${qp.toString()}`, options);
+};
+export const getObjectById = (collection, id, options) => request(`/collections/${collection}/${id}`, options);
+export const updateObject = (collection, data, options) => request(`/collections/${collection}/${data.id}`, { method: "PUT", body: data, ...options });
+export const deleteObject = (collection, id, options) => request(`/collections/${collection}/${id}`, { method: "DELETE", ...options });
+export const countObjects = (collection, where, options) => {
+  const qp = where ? `?where=${encodeURIComponent(JSON.stringify(where))}` : "";
+  return request(`/count/${collection}${qp}`, options);
+};
+
+// —————— Users API ——————
+export async function signUp({ username, email, password }, options) {
+  const res = await request("/signup", { method: "POST", body: { username, email, password }, ...options });
+  if (res.token) saveToken(res.token);
+  return res;
+}
+export async function signIn({ username, password }, options) {
+  const res = await request("/signin", { method: "POST", body: { username, password }, ...options });
+  if (res.token) saveToken(res.token);
+  return res;
+}
+export async function signOut(options) {
+  try {
+    await request("/signout", { method: "POST", ...options });
+  } catch (error) {
+    console.error(error.message);
+  } finally {
+    clearToken();
+  }
+}
+export const getCurrentUser = (options) => request("/me", options);
+
+// —————— Files API ——————
+export async function uploadFile(file, filename = file.name, options) {
+  // Convert file to blob if it's not already
+  const blob = file instanceof Blob ? file : new Blob([file], { type: file.type });
+  const headers = new Headers();
+  headers.set("Content-Type", blob.type || "application/octet-stream");
+  return request(`/files/${filename}`, {
+    method: "POST",
+    body: blob,
+    headers,
+    ...options,
+  });
+}
+// —————— Schemas API ——————
+export const createSchema = (schema, options) => request("/schemas", { method: "POST", body: schema, ...options });
+export const getSchema = (collection, options) => request(`/schemas/${collection}`, options);
+export const getSchemas = (where, options) => {
+  const qp = where ? `?where=${encodeURIComponent(JSON.stringify(where))}` : "";
+  return request(`/schemas${qp}`, options);
+};
+export const updateSchema = (schema, options) => request(`/schemas/${schema.collection}`, { method: "PUT", body: schema, ...options });
+export const deleteSchema = (collection, options) => request(`/schemas/${collection}`, { method: "DELETE", ...options });
+```
+
+### Use Case Pattern Implementation
+
+#### Object Use Cases
+
+```javascript
+// CreateObjectUseCase.js
+import { createObject } from "../../api.js";
+class CreateObjectUseCase {
+  constructor() {
+    this.abortController = null;
+  }
+  async execute(collection, data, options) {
+    try {
+      this.abortController = new AbortController();
+      const response = await createObject(collection, data, { signal: this.abortController.signal, ...options });
+      return response;
+    } catch (error) {
+      if (error.name === "AbortError") {
+        console.log("Create object use case was aborted");
+        return null;
+      }
+      throw new Error(`Create object use case failed: ${error.message}`);
+    }
+  }
+  abort() {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+  }
+}
+```
+
+#### Upsert Object Use Case
+
+```javascript
+// UpsertObjectUseCase.js
+  async execute(data, collection, options) {
+    try {
+      this.abortController = new AbortController();
+      // Check if this is an update (has id) or create (no id)
+      if (data && data.id) {
+        // Update existing object
+        const response = await updateObject(collection, data, { signal: this.abortController.signal, upsert: true, ...options });
+        return response;
+      } else {
+        // Create new object
+        const response = await createObject(collection, data, { signal: this.abortController.signal, ...options });
+        return response;
+      }
+    }
+  }
+```
+#### Count Object Use Case
+```javascript
+// CountObjectUseCase.js
+ return response.count;
+```
+
+#### Use Case Index Pattern
+
+```javascript
+// usecases/object/index.js
+import CreateObjectUseCase from "./CreateObjectUseCase";
+import GetObjectUseCase from "./GetObjectUseCase";
+import UpdateObjectUseCase from "./UpdateObjectUseCase";
+import DeleteObjectUseCase from "./DeleteObjectUseCase";
+import FindObjectUseCase from "./FindObjectUseCase";
+import UpsertObjectUseCase from "./UpsertObjectUseCase";
+
+// Export instantiated use cases
+export const createObjectUseCase = new CreateObjectUseCase();
+export const getObjectUseCase = new GetObjectUseCase();
+export const updateObjectUseCase = new UpdateObjectUseCase();
+export const deleteObjectUseCase = new DeleteObjectUseCase();
+export const findObjectUseCase = new FindObjectUseCase();
+export const upsertObjectUseCase = new UpsertObjectUseCase();
+```
+---
+
+## 📁 Use Case Organization
+
+### Directory Structure
+
+```
+src/usecases/
+├── object/
+│   ├── CreateObjectUseCase.js
+│   ├── GetObjectUseCase.js
+│   ├── UpdateObjectUseCase.js
+│   ├── DeleteObjectUseCase.js
+│   ├── FindObjectUseCase.js
+│   ├── UpsertObjectUseCase.js
+│   └── index.js
+├── schema/
+│   ├── CreateSchemaUseCase.js
+│   ├── GetSchemaUseCase.js
+│   ├── FindSchemasUseCase.js
+│   ├── UpdateSchemaUseCase.js
+│   ├── DeleteSchemaUseCase.js
+│   └── index.js
+├── user/
+│   ├── SignUpUseCase.js
+│   ├── SignInUseCase.js
+│   ├── SignOutUseCase.js
+│   ├── GetCurrentUserUseCase.js
+│   └── index.js
+└── file/
+    ├── UploadFileUseCase.js
+    └── index.js
+```
