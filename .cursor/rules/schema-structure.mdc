@@ -1,14 +1,17 @@
 ---
 description: Innque API schema organization with field definitions (String, Number, Boolean, Date, Array, Pointer, Relation, ACL).
-globs: 
+globs:
 alwaysApply: false
 ---
+
 # Schema Structure and Definition
 
 ## Overview
+
 This rule defines schema structure and definition patterns for schema-driven React applications. It covers schema organization, field definitions, data types, and schema design best practices.
 
 ## Core Principles
+
 - **Dynamic Properties**: Backend provides dynamic properties by default for all schemas
 - **Frontend Extensions**: UI-specific properties can be added for dynamic form generation
 - **Runtime Flexibility**: Schema changes take effect without code deployment
@@ -16,22 +19,42 @@ This rule defines schema structure and definition patterns for schema-driven Rea
 ## Schema Structure
 
 ### Dynamic Properties Concept
+
 The backend automatically provides dynamic properties for all schemas by default. This means:
+
 - **Automatic Field Detection**: Backend can infer field types and properties
 - **Default Validation**: Basic validation rules are applied automatically
 - **Permission Inheritance**: Access controls are inherited from collection settings
 - **Extensible Design**: Frontend can extend schemas with UI-specific properties
 
 ### Backend Schema (Default)
+
 The backend provides dynamic properties by default for all schemas:
 
 ```json
 {
   "collection": "MyCollection",
   "fields": {
-    "field_name": {
+    "id": {
       "type": "String",
-      "required": true
+      "default": "${crypto.uuid}",
+      "once": true
+    },
+    "created": {
+      "type": "Date",
+      "default": "${date.iso}",
+      "once": true
+    },
+    "updated": {
+      "type": "Date",
+      "value": "${date.iso}"
+    },
+    "acl": {
+      "type": "ACL",
+      "default": {
+        "read": ["*"],
+        "write": ["*"]
+      }
     }
   },
   "permissions": {
@@ -44,6 +67,7 @@ The backend provides dynamic properties by default for all schemas:
 ```
 
 ### Frontend Extended Schema (UI Generation)
+
 Frontend can extend schemas with UI-specific properties for dynamic form generation:
 
 ```json
@@ -82,15 +106,26 @@ Frontend can extend schemas with UI-specific properties for dynamic form generat
 ## Schema Property Categories
 
 ### Backend Properties (Default)
+
 - `collection` - Collection name
 - `fields` - Field definitions with basic properties
 - `permissions` - Access control rules
 
+### Permission Conventions
+
+- `role:{name}` - Users with specific role (e.g., `role:admin`)
+- `{userID}` - Specific user by ID
+- `"*"` - All authenticated users
+- `[]` - Master key access only
+- `` (empty string) - Public access (no authentication required)
+
 ### Frontend Extension Properties (Optional)
+
 - `tabs` - Tab definitions for organizing fields into logical groups with labels and metadata
 - `sections` - Section definitions for sub-grouping fields within tabs for better organization
 
 ## Supported Data Types
+
 - `String` - Alphanumeric text
 - `Number` - Numerical values
 - `Boolean` - True or false values
@@ -103,12 +138,17 @@ Frontend can extend schemas with UI-specific properties for dynamic form generat
 ## Field Properties
 
 ### Backend Properties (Default)
+
 - `type` - Data type of the field (String, Number, Boolean, etc.)
 - `target` - Target collection for Pointer types
 - `required` - Whether field is mandatory
+- `unique` - Set to true to ensure field value is unique across all records
 - `default` - Default value for the field
+- `value` - Same as default but always overrides the value (forces update)
+- `once` - Set to true to apply default value only on creation (never update)
 
 ### Frontend Extension Properties (UI Generation)
+
 - `label` - Display label for the field
 - `placeholder` - Placeholder text for input
 - `format` - Frontend-specific input type (e.g., "email", "password", "tel", "url", "image")
@@ -116,3 +156,31 @@ Frontend can extend schemas with UI-specific properties for dynamic form generat
 - `tab` - Tab identifier to assign field to a specific tab group
 - `section` - Section identifier to assign field to a specific section within a tab
 - `col` - Tailwind column classes for responsive layout
+
+## Dynamic Placeholders
+
+### Date and Time Placeholders
+
+- `${date.iso}` - ISO 8601 format (e.g., `2023-09-15T12:34:56.789Z`)
+- `${date.year}` - Current year (e.g., `2023`)
+- `${date.month}` - Current month 1-12 (e.g., `9`)
+- `${date.day}` - Current day 1-31 (e.g., `15`)
+- `${date.hours}` - Current hour 0-23 (e.g., `12`)
+- `${date.minutes}` - Current minute 0-59 (e.g., `34`)
+- `${date.seconds}` - Current second 0-59 (e.g., `56`)
+- `${date.local}` - Local date format (e.g., `09/15/2023`)
+- `${date.timestamp}` - Unix timestamp (e.g., `1694780096789`)
+- `${date.utc}` - UTC time representation (e.g., `2023-09-15T12:34:56Z`)
+
+### User and Object Context
+
+- `${user.id}` - Current authenticated user ID
+- `${user.name}` - Current authenticated user name
+- `${user.email}` - Current authenticated user email
+- `${object.id}` - ID of the object being processed
+- `${object.fieldName}` - Value of specific field in current object
+
+### System-Generated Values
+
+- `${crypto.uuid}` - Generate UUID v4
+- `${crypto.randomHex}` - Generate random hexadecimal string
