@@ -57,7 +57,7 @@ export default defineConfig({
 #### Create Console Monitor Scripts
 
 ```javascript
-// scripts/consoleMonitorHeadless.js
+// scripts/ConsoleMonitor.js
 import puppeteer from "puppeteer";
 
 class ConsoleMonitor {
@@ -158,12 +158,10 @@ monitor.start().catch(console.error);
 }
 ```
 
-### 6. Start Development Server with Console Monitoring
-
 ```bash
 # Terminal 1: Start development server
 npm run dev
 
-# Terminal 2: Start console monitoring (REQUIRED)
-npm run monitor:headless
+# Terminal 2: Start console monitoring
+npm run monitor
 ```

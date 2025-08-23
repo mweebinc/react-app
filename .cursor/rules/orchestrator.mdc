@@ -34,20 +34,19 @@ alwaysApply: true
 
 **Implementation Priority:**
 
-- **Project Setup** → **MVP Architecture** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Console Monitoring** → **Build Verification** → **Production Optimization**
+- **Project Setup** → **MVP Architecture** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Build Verification** → **Runtime Monitoring** → **Production Optimization**
 
 ### **Automated Workflow Sequence**
 
-**Optimal sequence for quality assurance:**
+**Quality assurance workflow:**
 
 1. **Code Implementation**: Write/update application code
-2. **Lint Check**: `npm run lint` - Fix any code quality issues
-3. **Process Management**: Check if dev server is already running and kill if necessary
-4. **Console Monitoring**: Start dev server + Puppeteer monitoring
+2. **Lint Check**: `npm run lint` - Fix compile-time issues
+3. **Build Verification**: `npm run build` - Ensure production readiness
+4. **Runtime Monitoring**: Start dev server + Puppeteer console monitoring
 5. **Error Detection**: Monitor console output for runtime issues
 6. **Issue Resolution**: Fix any detected errors or warnings
-7. **Build Verification**: `npm run build` - Ensure production readiness
-8. **Production Ready**: Deployable application with no errors
+7. **Production Ready**: Deployable application with no errors
 
 ### **Implementation Strategy**
 
@@ -62,8 +61,8 @@ alwaysApply: true
 - **No Mock Data**: Avoid creating mock data - implement direct API integration from the start
 - **Export Default**: Use `export default` for main exports to simplify imports and improve code readability
 - **Complete Feature Set**: Ensure all human requirements are fully implemented
-- **Console Monitoring**: Real-time error detection and debugging capabilities
-- **Quality Assurance**: Automated workflow with lint → console monitoring → build verification
+- **Runtime Monitoring**: Real-time error detection and debugging capabilities
+- **Quality Assurance**: Automated workflow with lint → build → runtime monitoring
 
 ### **Quality Standards**
 
@@ -71,11 +70,10 @@ alwaysApply: true
 - **Maintainability**: Clean, readable, and well-documented code
 - **Component Consistency**: Maintain consistent design patterns across all UI components
 - **Code Quality**: Run `npm run lint` and fix all linting issues before proceeding
-- **Runtime Quality**: Use Puppeteer console monitoring to detect and resolve runtime issues
 - **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
+- **Runtime Quality**: Use Puppeteer console monitoring to detect and resolve runtime issues
 - **Error-Free Deployment**: No console errors or warnings in production build
 - **Component Consistency**: Maintain consistent design patterns across all UI components
-- **Code Quality**: Run `npm run lint` and `npm run build` to ensure code quality and successful compilation before deployment
 
 ### **Rule Access Guidance**
 
