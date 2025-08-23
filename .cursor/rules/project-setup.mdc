@@ -1,11 +1,12 @@
 ---
 description: Setup guide for React applications with Vite and Tailwind CSS using the official Vite plugin without PostCSS dependencies.
-globs: 
+globs:
 alwaysApply: false
 ---
+
 # Project Setup
 
-
+Setup guide for React applications with Vite and Tailwind CSS using the official Vite plugin without PostCSS dependencies.
 
 ### Key Dependencies
 
@@ -14,43 +15,128 @@ alwaysApply: false
 - **@tailwindcss/vite** - Official Vite plugin for Tailwind CSS integration
 - **tailwindcss** - Utility-first CSS framework for rapid UI development
 - **react-infinite-scroll-component** - Infinite scrolling pagination for large datasets
-
+- **puppeteer** - Browser automation for console log monitoring and debugging (REQUIRED)
 
 ## Quick Setup Commands
 
 ### 1. Create Vite Project
+
 ```bash
 npm create vite@latest . -- --template react --
 ```
 
-### 2. Install Depedencies
+### 2. Install Dependencies
+
 ```bash
 npm install tailwindcss @tailwindcss/vite react-infinite-scroll-component
+npm install --save-dev puppeteer
 ```
 
 **Important**: Do NOT install PostCSS or any PostCSS plugins. The `@tailwindcss/vite` plugin handles all CSS processing automatically without requiring PostCSS configuration.
 
 ### 3. Configure Vite Plugin
+
 ```javascript
 // vite.config.js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [react(), tailwindcss()],
   server: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     port: 3000,
-    open: true
+    open: true,
+  },
+});
+```
+
+### 4. Setup Console Monitoring with Puppeteer (REQUIRED)
+
+#### Create Console Monitor Scripts
+
+```javascript
+// scripts/consoleMonitorHeadless.js
+import puppeteer from "puppeteer";
+
+class ConsoleMonitor {
+  constructor() {
+    this.browser = null;
+    this.page = null;
+    this.isRunning = false;
   }
-})
+
+  async start() {
+    try {
+      this.browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+
+      this.page = await this.browser.newPage();
+
+      // Capture console output
+      this.page.on("console", (msg) => {
+        const timestamp = new Date().toISOString();
+        const type = msg.type();
+        const text = msg.text();
+
+        // Color-coded output
+        const colors = {
+          log: "\x1b[37m", // White
+          info: "\x1b[34m", // Blue
+          warn: "\x1b[33m", // Yellow
+          error: "\x1b[31m", // Red
+          debug: "\x1b[36m", // Cyan
+        };
+
+        const reset = "\x1b[0m";
+        const color = colors[type] || colors.log;
+
+        console.log(`${color}[${timestamp}] [${type.toUpperCase()}] ${text}${reset}`);
+      });
+
+      // Capture page errors
+      this.page.on("pageerror", (error) => {
+        const timestamp = new Date().toISOString();
+        console.log(`\x1b[31m[${timestamp}] 🚨 PAGE ERROR: ${error.message}\x1b[0m`);
+        console.log(`\x1b[31m  Stack: ${error.stack}\x1b[0m`);
+      });
+
+      await this.page.goto("http://localhost:3000/", {
+        waitUntil: "networkidle0",
+        timeout: 30000,
+      });
+
+      console.log("✅ Console monitor started successfully");
+      console.log("🔍 Monitoring console output from http://localhost:3000/\n");
+    } catch (error) {
+      console.error("❌ Failed to start console monitor:", error.message);
+    }
+  }
+}
+
+const monitor = new ConsoleMonitor();
+monitor.start().catch(console.error);
+```
+
+#### Add NPM Scripts
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "monitor": "node scripts/consoleMonitor.js"
+  }
+}
 ```
 
 ### 5. Import Tailwind CSS
+
 ```css
 /* src/index.css */
 @import "tailwindcss";
@@ -70,10 +156,14 @@ export default defineConfig({
 ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
 }
-
 ```
 
-### 6. Start Development Server
+### 6. Start Development Server with Console Monitoring
+
 ```bash
+# Terminal 1: Start development server
 npm run dev
+
+# Terminal 2: Start console monitoring (REQUIRED)
+npm run monitor:headless
 ```
