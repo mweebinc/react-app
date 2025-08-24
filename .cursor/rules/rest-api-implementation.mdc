@@ -4,6 +4,8 @@ globs:
 alwaysApply: false
 ---
 
+# REST API implementation
+
 ## Objective
 
 Guide REST API implementation through **generic, reusable usecases** that eliminate redundancy and enable creative adaptation. Focus on **pattern recognition** and **purpose-driven design** rather than creating domain-specific implementations.
