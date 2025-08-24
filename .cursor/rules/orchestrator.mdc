@@ -6,7 +6,7 @@ alwaysApply: true
 
 ## Core Philosophy
 
-**Agentic Coding: Humans Design, Agents Code!**
+**Agentic Coding: Humans Requirements, Agents Code!**
 
 ### **Primary Objective**
 
@@ -29,8 +29,8 @@ alwaysApply: true
 5. **Frontend Complete**: If frontend is functional, proceed to Innque API integration
 6. **Code Quality Check**: Run `npm run lint` to ensure code quality and fix any linting issues
 7. **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
-8. **Development Server**: Start development server for runtime testing
-9. **Console Log Capture**: Start Puppeteer console capture for real-time error detection
+8. **Development Server**: Start development server (runs in background) for runtime testing
+9. **Console Log Capture**: Start Puppeteer console capture to test all routes for runtime errors (runs in foreground)
 10. **Production Ready**: Ensure all requirements are met and app is deployable
 
 **Implementation Priority:**
@@ -44,8 +44,8 @@ alwaysApply: true
 1. **Code Implementation**: Write/update application code
 2. **Lint Check**: `npm run lint` - Fix compile-time issues
 3. **Build Verification**: `npm run build` - Ensure production readiness
-4. **Development Server**: Start development server for runtime testing
-5. **Console Capture**: Start Puppeteer console capture for real-time error detection
+4. **Development Server**: Start development server (runs in background) for runtime testing
+5. **Console Capture**: Start Puppeteer console capture to test all routes for runtime errors (runs in foreground)
 6. **Error Detection**: Monitor console output for runtime issues
 7. **Issue Resolution**: Fix any detected errors or warnings
 8. **Production Ready**: Deployable application with no errors
@@ -73,7 +73,7 @@ alwaysApply: true
 - **Component Consistency**: Maintain consistent design patterns across all UI components
 - **Code Quality**: Run `npm run lint` and fix all linting issues before proceeding
 - **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
-- **Runtime Quality**: Use Puppeteer console capture to detect and resolve runtime issues
+- **Runtime Quality**: Use Puppeteer console capture to test all routes and detect runtime issues
 - **Error-Free Deployment**: No console errors or warnings in production build
 
 ### **Rule Access Guidance**

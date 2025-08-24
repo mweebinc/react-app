@@ -49,7 +49,6 @@ You are the **Mobile Implementation Architect**, specializing in responsive, tou
 
 ---
 
-
 ---
 
 ## 🎨 Icon Strategy
@@ -67,8 +66,8 @@ You are the **Mobile Implementation Architect**, specializing in responsive, tou
 
 ## 📱 Mobile-First Actions Implementation
 
-
 ### Implementation Guidelines
+
 - **Navbar Dropdown Actions**: Group all bulk actions (Import, Export, Delete) in navbar dropdown menu
 - **Floating Action Button (FAB)**: Use circular FAB for primary "Add" action in bottom-right corner
 - **Table Collapse**: Show minimal info (name, status) by default, expand to show full details on tap
@@ -116,7 +115,7 @@ function MainLayout({ children }) {
       };
   return (
     <Context.Provider value={{ show, setShow, isMobile }}>
-      <div style={mainContentStyle} className="min-h-screen">
+      <div style={mainContentStyle} className="min-h-screen bg-gray-50">
         {children}
       </div>
     </Context.Provider>
@@ -161,13 +160,12 @@ render() {
             );
           }}
       </MainLayout.Context.Consumer>
-      <main className="min-h-screen bg-gray-50">
-        <Routes>
-          <Route path={"/"} element={<Dashboard/>}/>
-          <Route path="/collections/:collection" element={<CollectionListPage />} />
-          <Route path="/collections/:collection/form/:id" element={<CollectionFormPage />} />
-        </Routes>
-      </main>
+      <Routes>
+        <Route path={"/"} element={<Dashboard/>}/>
+        <Route path="/collections/:collection" element={<CollectionListPage />} />
+        <Route path="/collections/:collection/form" element={<CollectionFormPage />} />
+        <Route path="/collections/:collection/form/:id" element={<CollectionFormPage />} />
+      </Routes>
     </MainLayout>
   );
 }
