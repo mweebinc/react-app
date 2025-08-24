@@ -66,63 +66,22 @@ class ConsoleCapture {
     this.browser = null;
     this.page = null;
     this.isRunning = false;
-    this.routes = [];
-    this.timeout = 3000; // Default 3 seconds
-    this.serverUrl = "http://localhost:3000";
-  }
-  parseArguments() {
-    const args = process.argv.slice(2);
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-      const nextArg = args[i + 1];
-      if ((arg === "--routes" || arg === "-r") && nextArg && !nextArg.startsWith("-")) {
-        this.routes = nextArg.split(",").map((route) => route.trim());
-        i++;
-      } else if ((arg === "--timeout" || arg === "-t") && nextArg && !nextArg.startsWith("-")) {
-        this.timeout = parseInt(nextArg) * 1000;
-        i++;
-      } else if ((arg === "--serverUrl" || arg === "-b") && nextArg && !nextArg.startsWith("-")) {
-        this.serverUrl = nextArg;
-        i++;
-      } else if (arg === "--help" || arg === "-h") {
-        this.showHelp();
-        process.exit(0);
-      }
-    }
-    if (this.routes.length === 0) {
-      this.routes = ["/"];
-    }
-  }
-  showHelp() {
-    console.log(`
-Console Capture Tool - Runtime Error Detection
-Usage: node consoleCapture.js [options]
-Options:
-  -r, --routes <routes>   Comma-separated list of routes to test
-  -t, --timeout <seconds>  Timeout in seconds for each route
-  -b, --serverUrl <url>   Server URL for testing
-  -h, --help              Show this help message
-`);
   }
 
   async start() {
     try {
-      this.parseArguments();
-      console.log(`🚀 Starting console capture with configuration:`);
-      console.log(`   Routes: ${this.routes.join(", ")}`);
-      console.log(`   Timeout: ${this.timeout / 1000} seconds per route`);
-      console.log(`   Server URL: ${this.serverUrl}\n`);
       this.browser = await puppeteer.launch({
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
+
       this.page = await this.browser.newPage();
+
       // Capture console output
       this.page.on("console", (msg) => {
         const timestamp = new Date().toISOString();
         const type = msg.type();
         const text = msg.text();
-        const url = this.page.url();
 
         // Color-coded output
         const colors = {
@@ -132,41 +91,35 @@ Options:
           error: "\x1b[31m", // Red
           debug: "\x1b[36m", // Cyan
         };
+
         const reset = "\x1b[0m";
         const color = colors[type] || colors.log;
-        console.log(`${color}[${timestamp}] [${type.toUpperCase()}] [${url}] ${text}${reset}`);
+
+        console.log(`${color}[${timestamp}] [${type.toUpperCase()}] ${text}${reset}`);
       });
 
       // Capture page errors
       this.page.on("pageerror", (error) => {
         const timestamp = new Date().toISOString();
-        const url = this.page.url();
-        console.log(`\x1b[31m[${timestamp}] 🚨 PAGE ERROR [${url}]: ${error.message}\x1b[0m`);
+        console.log(`\x1b[31m[${timestamp}] 🚨 PAGE ERROR: ${error.message}\x1b[0m`);
         console.log(`\x1b[31m  Stack: ${error.stack}\x1b[0m`);
       });
 
-      // Test each route
-      for (const route of this.routes) {
-        const fullUrl = `${this.serverUrl}${route}`;
-        console.log(`\n🔍 Testing route: ${fullUrl}`);
-        try {
-          await this.page.goto(fullUrl, {
-            waitUntil: "networkidle0",
-            timeout: 30000,
-          });
-          console.log(`✅ Successfully loaded: ${fullUrl}`);
-          // Wait for potential runtime errors to appear
-          await new Promise((resolve) => setTimeout(resolve, this.timeout));
-        } catch (error) {
-          console.log(`❌ Failed to load: ${fullUrl}`);
-          console.log(`   Error: ${error.message}`);
-        }
-      }
+      await this.page.goto("http://localhost:3005/", {
+        waitUntil: "networkidle0",
+        timeout: 30000,
+      });
 
-      console.log("\n✅ Console capture completed for all routes");
-      console.log("📊 Summary: All routes tested for runtime errors");
+      console.log("✅ Console capture started successfully");
+      console.log("🔍 Capturing console output from http://localhost:3000/\n");
+
+      // Wait for initial logs to appear, then exit
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      console.log("✅ Console capture completed, exiting...");
       await this.browser.close();
       process.exit(0);
+
     } catch (error) {
       console.error("❌ Failed to start console capture:", error.message);
       if (this.browser) {
@@ -181,7 +134,20 @@ const monitor = new ConsoleCapture();
 monitor.start().catch(console.error);
 ```
 
+#### Add NPM Scripts
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "capture": "node scripts/consoleCapture.js"
+  }
+}
 ```
+
 ### 5. Import Tailwind CSS
 
 ```css
@@ -206,9 +172,9 @@ monitor.start().catch(console.error);
 ```
 
 ```bash
-# Start development server (runs in background)
+# Terminal 1: Start development server
 npm run dev
 
-# Start console capture (runs in foreground - LLM agent waits for completion)
-node scripts/consoleCapture.js
+# Terminal 2: Start console capture
+npm run capture
 ```

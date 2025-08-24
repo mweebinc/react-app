@@ -159,7 +159,7 @@ The `src/pages/main/menus.js` file defines the application navigation structure 
 - **path** - Navigation path (can be string for direct links or array for sub-menus)
 - **icon** - Emoji or icon class or svg path for visual representation
 - **description** - Brief description of the page/feature
-- **privileges** - Array of user roles with access (optional, for role-based menu visibility)
+- **allowed** - Array of user roles with access (optional, for role-based menu visibility)
 
 ### Generic Collection Routes
 
