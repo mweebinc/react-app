@@ -1,5 +1,5 @@
 ---
-description: Innque API schema organization with field definitions (String, Number, Boolean, Date, Array, Pointer, Relation, ACL).
+description: Innque API schema organization with field definition types (String, Number, Boolean, Date, Array, Pointer, Relation, ACL).
 globs:
 alwaysApply: false
 ---

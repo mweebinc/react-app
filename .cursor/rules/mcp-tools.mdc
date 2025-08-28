@@ -1,5 +1,5 @@
 ---
-description: Innque API schema and data management tools. Provides create_schema, get_schema, find_schema, update_schema, delete_schema for schema management and create_object, get_object, find_objects, update_object, delete_object, count_objects for data operations.
+description: Use Innque API tools for schema management and object management operations.
 globs: 
 alwaysApply: false
 ---

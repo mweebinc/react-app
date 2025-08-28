@@ -1,13 +1,9 @@
 ---
-description: Mobile-first responsive design with touch interactions. Implements sidebar navigation with gestures, Tailwind CSS breakpoints, viewport config, touch targets, and accessibility for optimal mobile UX.
+description: Implement mobile-first responsive design with touch sidebar navigation, Tailwind breakpoints, and accessibility for optimal mobile UX.
 alwaysApply: false
 ---
 
-# Mobile Implementation Architect
-
-## Identity & Purpose
-
-You are the **Mobile Implementation Architect**, specializing in responsive, touch-friendly interfaces that adapt seamlessly across devices. Your focus is mobile-first design with progressive enhancement, ensuring optimal user experience on mobile devices while maintaining functionality on larger screens.
+# 📱 Mobile Implementation Architect
 
 ## Core Philosophy
 
@@ -51,6 +47,35 @@ You are the **Mobile Implementation Architect**, specializing in responsive, tou
 
 ---
 
+## 🎨 Design Guidelines
+
+### Design Pattern Selection Framework
+
+The AI agent will analyze user requirements and automatically select the most appropriate design pattern based on the application's goals and target audience.
+
+#### Available Design Patterns
+**Skeuomorphic Design**
+**Flat Design**
+**Material Design (Google)**
+**Neumorphism (Soft UI)**
+**Glassmorphism**
+**Minimalist / Clean UI**
+**Brutalist Design**
+**Dark Mode Design**
+**Claymorphism**
+**Metro / Fluent Design (Microsoft)**
+**Gamification UI**
+
+
+### Implementation Guidelines
+
+- **Design Consistency**: Once a design pattern is selected, maintain consistency throughout the application
+- **Accessibility First**: Ensure all design patterns meet WCAG guidelines regardless of aesthetic choice
+- **Performance Consideration**: Balance visual appeal with loading speed and responsiveness
+- **User Testing**: Design patterns should be validated against target user preferences
+
+---
+
 ## 🎨 Icon Strategy
 
 ### Icon Selection Framework
@@ -64,16 +89,15 @@ You are the **Mobile Implementation Architect**, specializing in responsive, tou
 
 ---
 
-## 📱 Mobile-First Actions Implementation
-
 ### Implementation Guidelines
 
-- **Navbar Dropdown Actions**: Group all bulk actions (Import, Export, Delete) in navbar dropdown menu
-- **Floating Action Button (FAB)**: Use circular FAB for primary "Add" action in bottom-right corner
-- **Table Collapse**: Show minimal info (name, status) by default, expand to show full details on tap
-- **No Horizontal Scroll**: Eliminate need for horizontal scrolling on mobile devices
+- **Navbar**: Place bulk actions (Import, Export, Delete) in dropdown menu
+- **FAB**: Use circular floating action button for "Add" in bottom-right corner on list pages
+- **Form Actions**: Use Save/Cancel buttons at bottom of form pages
+- **Tables**: Show minimal info (name, status) by default, expand on tap for full details
+- **No Horizontal Scroll**: Eliminate horizontal scrolling on mobile devices
+- **Avoid Duplicate Actions**: Prevent duplicate action buttons across different UI areas (e.g., don't have Save button in both form and Navbar)
 
----
 
 ## Key Implementation Rules
 
@@ -111,7 +135,7 @@ function MainLayout({ children }) {
     ? {}
     : {
         marginLeft: show ? "270px" : "0px",
-        transition: "margin-left 0.3s ease-in-out, margin-right 0.3s ease-in-out",
+        transition: "margin-left 0.3s ease-in-out",
       };
   return (
     <Context.Provider value={{ show, setShow, isMobile }}>
@@ -132,30 +156,21 @@ MainLayout.Context = Context;
 
 ```javascript
 render() {
-  if (this.state.loading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <Spinner/>
-            <p className="mt-4 text-gray-600">Initializing...</p>
-          </div>
-        </div>
-      );
-  }
   return (
     <MainLayout>
       <MainLayout.Context.Consumer>
-          {(ctx) => {
+          {({show,setShow,isMobile}) => {
             return (
               <Sidebar
-                show={ctx.show}
-                onSetShow={ctx.setShow}
+                show={show}
+                onSetShow={setShow}
                 position="left"
                 className="bg-white">
                 <NavSidebar
+                  className="lg:w-[270px]"
                   menus={menus}
-                  isMobile={ctx.isMobile}
-                  setShow={ctx.setShow} />
+                  isMobile={isMobile}
+                  setShow={setShow} />
               </Sidebar>
             );
           }}
@@ -173,8 +188,8 @@ render() {
 
 ### Navbar Component Implementation
 
-- **Page-Level Import**: Import Navbar in individual pages for custom actions
-- **Custom Actions**: Children prop allows page-specific action buttons
+- **Page-Level Import**: Import Navbar in individual pages
+- **Custom Actions**: Children prop allows page-specific button
 - **Loading State**: Animated loading indicator
 - **Sticky Positioning**: `sticky top-0` for persistent navigation
 - **No lg:hidden**: Avoid using `lg:hidden` classes in Navbar components to maintain consistent hamburger menu functionality across all screen sizes
@@ -281,24 +296,27 @@ function Sidebar({ show = false, onSetShow, position = "left", children, classNa
   return (
     <>
       {shouldShowDragHandle && <div className={`fixed top-0 bottom-0 z-50 touch-manipulation lg:hidden ${isRight ? "right-0" : "left-0"}`} style={{ width: touchHandleWidth }} onTouchStart={handleTouchStart} />}
-      <div
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ease-in-out lg:hidden ${show ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
-        style={
-          isDragging
-            ? {
-                opacity: percentage / 100,
-                transition: "none",
-                visibility: "visible",
-                pointerEvents: "auto",
-                backgroundColor: "rgba(0,0,0,0.3)",
-              }
-            : { backgroundColor: "rgba(0,0,0,0.3)" }
-        }
-        onClick={() => onSetShow?.(false)}
-      />
+      {touchSupported && (
+        <div
+          className={`fixed inset-0 z-50 transition-opacity duration-300 ease-in-out ${show ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
+          style={
+            isDragging
+              ? {
+                  opacity: percentage / 100,
+                  transition: "none",
+                  visibility: "visible",
+                  pointerEvents: "auto",
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                }
+              : { backgroundColor: "rgba(0,0,0,0.3)" }
+          }
+          onClick={() => onSetShow?.(false)}
+        />
+      )}
+
       <div
         ref={sidebarRef}
-        className={`fixed top-0 h-full z-50 shadow-lg lg:z-40 w-80 max-w-[80vw] lg:w-[270px] overflow-y-auto ${isRight ? "right-0" : "left-0"} ${className}`}
+        className={`fixed top-0 h-full z-50 lg:z-30 shadow-lg overflow-y-auto ${isRight ? "right-0" : "left-0"} ${className}`}
         style={{
           transform: getTransform(),
           WebkitTransform: getTransform(),

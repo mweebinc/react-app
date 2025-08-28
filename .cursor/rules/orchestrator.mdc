@@ -21,21 +21,23 @@ alwaysApply: true
 **The AI is fully autonomous and will analyze the current project state to determine what needs to be implemented to achieve a production-ready application.**
 
 **Project State Analysis:**
+When you cannot directly read other rules, they are located in the `.cursor/rules/` folder Use the `fetch_rules` tool to retrieve specific rules when needed for implementation guidance.
 
-1. **Empty Project**: If no React project exists, implement project setup with Vite and Tailwind CSS
-2. **Basic Setup**: If project exists but lacks architecture, implement MVP architecture base classes
-3. **Architecture Ready**: If MVP architecture exists, implement mobile-first responsive components
+
+1. **Empty Project**: If no React project exists, implement project setup with Vite and Tailwind CSS without postcss
+2. **Basic Setup**: If project exists but lacks structure, implement project structure
+3. **Structure Ready**: If project structure exists, implement mobile-first responsive components
 4. **Components Ready**: If UI components exist, implement core pages and functionality
 5. **Frontend Complete**: If frontend is functional, proceed to Innque API integration
 6. **Code Quality Check**: Run `npm run lint` to ensure code quality and fix any linting issues
 7. **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
-8. **Development Server**: Start development server (runs in background) for runtime testing
+8. **Development Server**: Start development server (runs in background) for runtime testing, ensure to close any existing dev server running on port 3000 first
 9. **Console Log Capture**: Start Puppeteer console capture to test all routes for runtime errors (runs in foreground)
-10. **Production Ready**: Ensure all requirements are met and app is deployable
+10. **git add and git commit**: Ensure all requirements are met and app is deployable
 
 **Implementation Priority:**
 
-- **Project Setup** → **MVP Architecture** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Build Verification** → **Development Server** → **Runtime Capture** → **Production Optimization**
+- **Project Setup** → **Project Structure** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Build Verification** → **Development Server** → **Runtime Capture** → **Production Optimization**
 
 ### **Automated Workflow Sequence**
 
@@ -44,11 +46,11 @@ alwaysApply: true
 1. **Code Implementation**: Write/update application code
 2. **Lint Check**: `npm run lint` - Fix compile-time issues
 3. **Build Verification**: `npm run build` - Ensure production readiness
-4. **Development Server**: Start development server (runs in background) for runtime testing
+4. **Development Server**: Start development server, ensure to close any existing dev server running on port 3000 first
 5. **Console Capture**: Start Puppeteer console capture to test all routes for runtime errors (runs in foreground)
 6. **Error Detection**: Monitor console output for runtime issues
 7. **Issue Resolution**: Fix any detected errors or warnings
-8. **Production Ready**: Deployable application with no errors
+8. **git add and git commit**: Deployable application with no errors
 
 ### **Implementation Strategy**
 
@@ -56,12 +58,12 @@ alwaysApply: true
 - **Autonomous Decision Making**: AI analyzes current project state and decides next steps
 - **Innque API Integration**: Connect to existing Innque API backend when frontend is ready
 - **Mobile-First**: Responsive design with touch interactions
-- **MVP Architecture**: Separation of concerns with dependency injection
+- **Project Structure**: Separation of concerns
 - **DRY Principle**: Create reusable components to avoid code duplication
-- **Single Responsibility**: Each component and class should have one clear purpose
+- **Single Responsibility**: Each component and function should have one clear purpose
 - **Continuous Progress**: AI proceeds through all stages without mandatory stops
 - **No Mock Data**: Avoid creating mock data - implement direct API integration from the start
-- **Export Default**: Use `export default` for main exports to simplify imports and improve code readability
+- **Named Exports**: Use named exports for better tree shaking and explicit imports
 - **Complete Feature Set**: Ensure all human requirements are fully implemented
 - **Runtime Capture**: Real-time error detection and debugging capabilities
 - **Quality Assurance**: Automated workflow with lint → build → development server → console capture
@@ -75,15 +77,3 @@ alwaysApply: true
 - **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
 - **Runtime Quality**: Use Puppeteer console capture to test all routes and detect runtime issues
 - **Error-Free Deployment**: No console errors or warnings in production build
-
-### **Rule Access Guidance**
-
-When you cannot directly read other rules, they are located in the `.cursor/rules/` folder:
-
-- **mobile-implementation.mdc** - Mobile-first responsive design and touch interactions
-- **mvp-architecture.mdc** - Model-View-Presenter architecture patterns
-- **project-setup.mdc** - React project initialization with Vite and Tailwind CSS
-- **rest-api-implementation.mdc** - REST API patterns and data management
-- **mcp-tools.mdc** - Schema and data management tools
-- **schema-structure.mdc** - Schema structure and field definitions
-  **Access Method**: Use the `fetch_rules` tool to retrieve specific rules when needed for implementation guidance.

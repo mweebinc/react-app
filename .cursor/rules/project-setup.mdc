@@ -1,5 +1,5 @@
 ---
-description: Setup guide for React applications with Vite and Tailwind CSS using the official Vite plugin without PostCSS dependencies.
+description: Setup guide for React applications with Vite and Tailwind CSS using official Vite plugin - no PostCSS dependencies.
 globs:
 alwaysApply: false
 ---
@@ -19,11 +19,15 @@ Setup guide for React applications with Vite and Tailwind CSS using the official
 
 ## Quick Setup Commands
 
-### 1. Create Vite Project
+> **Important**: This setup creates the React project directly in the current directory. Do NOT create a subfolder - all files will be placed in your current working directory.
+
+### 1. Create Vite Project in Current Directory
 
 ```bash
 npm create vite@latest . -- --template react --
 ```
+
+**Note**: The `.` tells Vite to create the project in the current directory instead of creating a new subfolder.
 
 ### 2. Install Dependencies
 
@@ -68,7 +72,7 @@ class ConsoleCapture {
     this.isRunning = false;
     this.routes = [];
     this.timeout = 3000; // Default 3 seconds
-    this.serverUrl = "http://localhost:3000";
+    this.url = "http://localhost:3000";
   }
   parseArguments() {
     const args = process.argv.slice(2);
@@ -81,8 +85,8 @@ class ConsoleCapture {
       } else if ((arg === "--timeout" || arg === "-t") && nextArg && !nextArg.startsWith("-")) {
         this.timeout = parseInt(nextArg) * 1000;
         i++;
-      } else if ((arg === "--serverUrl" || arg === "-b") && nextArg && !nextArg.startsWith("-")) {
-        this.serverUrl = nextArg;
+      } else if ((arg === "--url" || arg === "-u") && nextArg && !nextArg.startsWith("-")) {
+        this.url = nextArg;
         i++;
       } else if (arg === "--help" || arg === "-h") {
         this.showHelp();
@@ -100,7 +104,7 @@ Usage: node consoleCapture.js [options]
 Options:
   -r, --routes <routes>   Comma-separated list of routes to test
   -t, --timeout <seconds>  Timeout in seconds for each route
-  -b, --serverUrl <url>   Server URL for testing
+  -u, --url <url>   Server URL for testing
   -h, --help              Show this help message
 `);
   }
@@ -111,7 +115,7 @@ Options:
       console.log(`🚀 Starting console capture with configuration:`);
       console.log(`   Routes: ${this.routes.join(", ")}`);
       console.log(`   Timeout: ${this.timeout / 1000} seconds per route`);
-      console.log(`   Server URL: ${this.serverUrl}\n`);
+      console.log(`   Server URL: ${this.url}\n`);
       this.browser = await puppeteer.launch({
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -147,7 +151,7 @@ Options:
 
       // Test each route
       for (const route of this.routes) {
-        const fullUrl = `${this.serverUrl}${route}`;
+        const fullUrl = `${this.url}${route}`;
         console.log(`\n🔍 Testing route: ${fullUrl}`);
         try {
           await this.page.goto(fullUrl, {
@@ -181,7 +185,6 @@ const monitor = new ConsoleCapture();
 monitor.start().catch(console.error);
 ```
 
-```
 ### 5. Import Tailwind CSS
 
 ```css
@@ -205,10 +208,17 @@ monitor.start().catch(console.error);
 }
 ```
 
+
+### 6. Initialize Git Repository
+
+```bash
+git init
+```
+
 ```bash
 # Start development server (runs in background)
 npm run dev
 
 # Start console capture (runs in foreground - LLM agent waits for completion)
-node scripts/consoleCapture.js
+node scripts/consoleMonitor.js --routes /,/signin,/signup,/dashboard,/other
 ```
