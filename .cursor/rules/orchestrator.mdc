@@ -97,16 +97,6 @@ alwaysApply: true
 - **Quality Assurance**: Automated workflow with lint → build → development server → end-to-end testing
 
 
-### **Quality Standards**
-
-- **Requirement Fulfillment**: All human requirements must be fully implemented
-- **Maintainability**: Clean, readable, and well-documented code
-- **Component Consistency**: Maintain consistent design patterns across all UI components
-- **Code Quality**: Run `npm run lint` and fix all linting issues before proceeding
-- **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
-- **Runtime Quality**: Use comprehensive Puppeteer end-to-end testing to validate all functionality with actual data
-- **Error-Free Deployment**: No console errors or warnings in production build
-
 ### **API Schema Error Handling**
 
 **When encountering API schema errors (e.g., key mismatches, missing fields, validation errors):**
@@ -127,9 +117,12 @@ alwaysApply: true
 6. **Validate Schema Changes**: Test API operations to ensure schema fixes resolve the errors
 7. **Update Frontend Code**: Adjust frontend code if needed to match corrected schema structure
 
-**Common Schema Error Patterns:**
-- **Key Mismatch**: Field names in frontend don't match schema field names
-- **Missing Fields**: Required fields not defined in schema
-- **Type Mismatch**: Frontend expects different data type than schema defines
-- **Permission Issues**: Access control rules prevent required operations
-- **Validation Errors**: Field constraints not met by data being sent
+### **Quality Standards**
+
+- **Requirement Fulfillment**: All human requirements must be fully implemented
+- **Maintainability**: Clean, readable, and well-documented code
+- **Component Consistency**: Maintain consistent design patterns across all UI components
+- **Code Quality**: Run `npm run lint` and fix all linting issues before proceeding
+- **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
+- **Runtime Quality**: Use comprehensive Puppeteer end-to-end testing to validate all functionality with actual data
+- **Error-Free Deployment**: No console errors or warnings in production build
