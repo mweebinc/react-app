@@ -40,11 +40,11 @@ alwaysApply: true
 
 **Implementation State Analysis:**
 
-1. **Empty Project**: If no React project exists, implement project setup with Vite and Tailwind CSS without postcss
-2. **Basic Setup**: If project exists but lacks structure, implement project structure
-3. **Structure Ready**: If project structure exists, implement mobile-first responsive components
+1. **Empty Project**: If no React project exists, implement @project-setup.mdc with Vite and Tailwind CSS without postcss
+2. **Basic Setup**: If project exists but lacks structure, implement @project-structure.mdc
+3. **Structure Ready**: If project structure exists, implement @mobile-implementation.mdc for mobile-first responsive components
 4. **Components Ready**: If UI components exist, implement core pages and functionality
-5. **Frontend Complete**: If frontend is functional, proceed to Innque API integration
+5. **Frontend Complete**: If frontend is functional, proceed to @rest-api-implementation.mdc for Innque API integration
 6. **Code Quality Check**: Run `npm run lint` to ensure code quality and fix any linting issues
 7. **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
 8. **Development Server**: Start development server (runs in background) for runtime testing, ensure to close any existing dev server running on port 3000 first
@@ -53,7 +53,7 @@ alwaysApply: true
 
 **Implementation Priority:**
 
-- **Project Setup** → **Project Structure** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Build Verification** → **Development Server** → **End-to-End Testing** → **Production Optimization**
+- **@project-setup.mdc** → **@project-structure.mdc** → **@mobile-implementation.mdc** → **UI Components** → **Core Pages** → **@rest-api-implementation.mdc** → **Code Quality** → **Build Verification** → **Development Server** → **@project-testing.mdc** → **Production Optimization**
 
 ### **Automated Workflow Sequence (non-blocking)**
 
@@ -68,7 +68,7 @@ alwaysApply: true
 9. **DONE Output**: Print a concise DONE summary:
    - files changed (paths),
    - brief key diffs,
-   - Compliance Score based on requirements fulfillment,
+   - Compliance Score based on requirement fulfillment,
 
 ### **Stop Conditions (the only times you pause)**
 
