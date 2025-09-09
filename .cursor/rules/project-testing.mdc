@@ -1,14 +1,54 @@
 ---
-description: This rule guides LLM agents on how to leverage Puppeteer for comprehensive end-to-end testing of React applications.
+description: This rule guides LLM agents on how to leverage Jest and Puppeteer for comprehensive end-to-end testing of React applications.
 alwaysApply: false
 ---
 # Project Testing Rule
 
 ## Core Testing Philosophy
 
+**Jest + Puppeteer Testing**: Use Jest as the test runner with Puppeteer for browser automation. All tests are located in the `tests/` folder.
+
 **End-to-End Testing with Real Data**: Implement comprehensive functional testing that validates user workflows through actual data inputs, form submissions, and business logic validation.
 
-**Puppeteer-Only Testing**: All tests use Puppeteer exclusively - no additional testing frameworks or dependencies. Configure Puppeteer with `headless: false` for browser-controlled testing that allows visual observation of test execution.
+**Visual Testing Configuration**: Configure Puppeteer with `headless: false` for browser-controlled testing that allows visual observation of test execution.
+
+## Jest + Puppeteer Usage Rules
+
+### Jest Configuration
+- **Test Files**: Use `.test.js` extension in `tests/` folder
+- **Test Structure**: Use `describe()` blocks for grouping, `test()` or `it()` for individual tests
+- **Setup/Teardown**: Use `beforeEach()` and `afterEach()` for browser management
+- **Async Testing**: Use `async/await` for Puppeteer operations
+
+### Puppeteer Integration
+- **Browser Launch**: Launch browser in `beforeEach()`, close in `afterEach()`
+- **Page Navigation**: Use `page.goto()` with `waitUntil: 'domcontentloaded'`
+- **Element Selection**: Use `page.$()` for single elements, `page.$$()` for multiple
+- **User Interactions**: Use `page.click()`, `page.type()`, `page.select()` for form interactions
+- **Assertions**: Use Jest's `expect()` with Puppeteer's element properties
+
+### Test File Template
+```javascript
+const puppeteer = require('puppeteer');
+
+describe('Feature Name', () => {
+  let browser, page;
+
+  beforeEach(async () => {
+    browser = await puppeteer.launch({ headless: false });
+    page = await browser.newPage();
+  });
+
+  afterEach(async () => {
+    await browser.close();
+  });
+
+  test('should perform specific action', async () => {
+    await page.goto('http://localhost:3000');
+    // Test implementation
+  });
+});
+```
 
 ## Performance Optimization
 
@@ -23,17 +63,17 @@ alwaysApply: false
 ## Testing Strategy
 
 ### Test Creation Pattern
-Create focused test scripts in `scripts/` folder following this hierarchy:
+Create focused test files in `tests/` folder following this hierarchy:
 
-1. **Authentication Foundation**: `test-signup.js`, `test-signin.js`
-2. **Feature-Specific**: `test-[feature-name].js` (one script per major feature)
-3. **Integration**: `test-navigation.js`, `test-offline.js`
+1. **Authentication Foundation**: `signup.test.js`, `signin.test.js`
+2. **Feature-Specific**: `[feature-name].test.js` (one file per major feature)
+3. **Integration**: `navigation.test.js`, `offline.test.js`
 
 ### Test Design Principles
 
-**Single Responsibility**: Each script tests ONE specific feature or functionality
-- ✅ `test-signup.js` - Only user registration
-- ❌ `test-authentication.js` - Both signup AND signin
+**Single Responsibility**: Each test file tests ONE specific feature or functionality
+- ✅ `signup.test.js` - Only user registration
+- ❌ `authentication.test.js` - Both signup AND signin
 
 **Real Data Validation**: Use realistic test data that mirrors production scenarios
 - Include edge cases and boundary conditions
@@ -54,11 +94,6 @@ Create focused test scripts in `scripts/` folder following this hierarchy:
 - Confirm all interactive elements are accessible and properly identified
 - This prevents test failures due to mismatched selectors and ensures reliable automation
 
-**Modular Structure**: Create reusable test utilities
-- Browser initialization and cleanup
-- Form filling and validation helpers
-- Error capture and reporting
-- Business logic validation
 
 **Error Handling**: Capture comprehensive error information
 - Browser console errors and warnings
@@ -94,10 +129,10 @@ Create focused test scripts in `scripts/` folder following this hierarchy:
 - During refactoring efforts
 
 ### Test Execution Strategy
-- Run tests in controlled environments
-- Ensure development server is running
-- Clean up test data after execution
-- Generate comprehensive reports
+- **Run Tests**: Use `npm test` or `jest` command to execute all tests
+- **Single Test**: Use `npm test -- [test-file-name]` to run specific test files
+- **Environment**: Ensure development server is running on localhost:3000
+- **Cleanup**: Clean up test data after execution
 
 ## Iterative Testing Loop
 
@@ -139,5 +174,3 @@ Create focused test scripts in `scripts/` folder following this hierarchy:
 - **Clean Output**: No console errors or warnings during test execution
 
 This iterative approach ensures that both test quality and application functionality reach production standards through continuous improvement and validation.
-
-This rule enables autonomous LLM agents to create comprehensive end-to-end test suites that validate React applications through real user workflows.

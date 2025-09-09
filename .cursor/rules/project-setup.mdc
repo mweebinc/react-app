@@ -15,6 +15,7 @@ Setup guide for React applications with Vite and Tailwind CSS using the official
 - **@tailwindcss/vite** - Official Vite plugin for Tailwind CSS integration
 - **tailwindcss** - Utility-first CSS framework for rapid UI development
 - **react-infinite-scroll-component** - Infinite scrolling pagination for large datasets
+- **jest** - JavaScript testing framework for unit and integration tests
 - **puppeteer** - Browser automation for end-to-end testing and debugging (REQUIRED)
 - **vite-plugin-pwa** - Progressive Web Application capabilities
 - **workbox-window** - Service worker management for PWA
@@ -124,7 +125,7 @@ npm create vite@latest . -- --template react
 
 ```bash
 npm install tailwindcss @tailwindcss/vite react-infinite-scroll-component
-npm install --save-dev puppeteer
+npm install --save-dev jest puppeteer
 ```
 
 **Important**: Do NOT install PostCSS or any PostCSS plugins. The `@tailwindcss/vite` plugin handles all CSS processing automatically without requiring PostCSS configuration.
