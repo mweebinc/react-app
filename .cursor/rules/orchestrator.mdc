@@ -26,6 +26,8 @@ alwaysApply: true
 - **Do not** end with "Next:" or planning-only summaries. End with either `DONE` (when all steps are finished) or a Stop Condition (see below).
 - If rules are referenced, use `fetch_rules` to read the relevant files in `.cursor/rules/` before proceeding.
 - **Testing Requests**: When users mention testing, testing requirements, or test-related tasks, use the `@project-testing.mdc` rule for comprehensive end-to-end testing guidance.
+- **API Integration**: When users mention API integration, backend connection, or data fetching, use the `@rest-api-implementation.mdc` rule for secure CRUD operations and Innque API integration.
+- **Schema & Object Management**: When users mention schema update, creation, or object creation, use the `@mcp-tools.mdc` rule for Innque API schema and object management operations.
 - **TODO Management**: Complete every TODO item sequentially - no skipping allowed.
 
 ### **Requirement Analysis Workflow**
