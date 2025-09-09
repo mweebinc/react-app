@@ -26,6 +26,7 @@ alwaysApply: true
 - **Do not** end with "Next:" or planning-only summaries. End with either `DONE` (when all steps are finished) or a Stop Condition (see below).
 - If rules are referenced, use `fetch_rules` to read the relevant files in `.cursor/rules/` before proceeding.
 - **Testing Requests**: When users mention testing, testing requirements, or test-related tasks, use the `@project-testing.mdc` rule for comprehensive end-to-end testing guidance.
+- **TODO Management**: Complete every TODO item sequentially - no skipping allowed.
 
 ### **Requirement Analysis Workflow**
 
@@ -47,7 +48,7 @@ alwaysApply: true
 6. **Code Quality Check**: Run `npm run lint` to ensure code quality and fix any linting issues
 7. **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
 8. **Development Server**: Start development server (runs in background) for runtime testing, ensure to close any existing dev server running on port 3000 first
-9. **End-to-End Testing**: Execute comprehensive Puppeteer test suite with actual data inputs and validations (runs in foreground)
+9. **End-to-End Testing**: Execute comprehensive Puppeteer test suite with actual data inputs and validations (runs in foreground) - follow @project-testing.mdc rule for comprehensive testing guidance
 10. **git add and git commit**: Ensure all requirements are met and app is deployable
 
 **Implementation Priority:**
@@ -59,15 +60,15 @@ alwaysApply: true
 1. **Code Implementation**: Write/update application code per current requirement.
 2. **Lint Check**: Run `npm run lint`; fix all issues.
 3. **Build Verification**: Run `npm run build` and ensure a successful production build.
-4. **Preview (non-watch, time-boxed)**: If a preview is needed, run a non-watch server briefly, e.g. `timeout 120s npx serve -s dist`, then continue.
-5. **End-to-End Tests (no watch/UI)**: Run tests in non-watch mode, e.g. `npm test -- --watch=false` or `npx playwright test --reporter=line`. Do **not** use dev servers or watch/UIs here.
+4. **Development Server**: Start development server, ensure to close any existing dev server running on port 3000 first
+5. **End-to-End Testing**: Execute comprehensive Puppeteer test suite with actual data inputs and validations (runs in foreground) - follow @project-testing.mdc rule for comprehensive testing guidance
 6. **Error Detection**: Parse console output; collect and summarize errors/warnings.
 7. **Issue Resolution**: Fix detected issues and **repeat 2 → 5** until lint/build/tests pass.
 8. **Git Commit**: `git add -A && git commit -m "<concise summary of completed feature>"`.
 9. **DONE Output**: Print a concise DONE summary:
    - files changed (paths),
    - brief key diffs,
-   - how to run (`build`, `test`, optional preview command).
+   - Compliance Score based on requirements fulfillment,
 
 ### **Stop Conditions (the only times you pause)**
 
@@ -95,15 +96,6 @@ alwaysApply: true
 - **End-to-End Testing**: Comprehensive functional testing with actual data inputs and validations
 - **Quality Assurance**: Automated workflow with lint → build → development server → end-to-end testing
 
-### **Terminal & Long-Running Tasks Policy**
-
-- **Never** run watchers or foreground dev servers during Agent runs:
-  - Avoid: `npm run dev`, `vite dev`, `nodemon`, `jest --watch`, `playwright test --ui`.
-- Prefer non-watch commands that terminate:
-  - Lint: `npm run lint`
-  - Build: `npm run build`
-  - Tests: `npm test -- --watch=false` or `npx playwright test --reporter=line`
-- If a preview is necessary mid-run, use a **time-boxed** static server (e.g., `timeout 120s npx serve -s dist`) and then proceed.
 
 ### **Quality Standards**
 
