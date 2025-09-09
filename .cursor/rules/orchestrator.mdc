@@ -20,8 +20,12 @@ alwaysApply: true
 
 **The AI is fully autonomous and will analyze the current project state to determine what needs to be implemented to achieve a production-ready application.**
 
-**Project State Analysis:**
-When you cannot directly read other rules, they are located in the `.cursor/rules/` folder. Use the `fetch_rules` tool to retrieve all the rules related to the current human task for implementation guidance.
+
+### Execution Policy (Do, don't just plan)
+- After creating any TODO/plan, **immediately execute Step 1** and continue **sequentially** through all items **without asking**.
+- **Do not** end with "Next:" or planning-only summaries. End with either `DONE` (when all steps are finished) or a Stop Condition (see below).
+- If rules are referenced, use `fetch_rules` to read the relevant files in `.cursor/rules/` before proceeding.
+- **Testing Requests**: When users mention testing, testing requirements, or test-related tasks, use the `@project-testing.mdc` rule for comprehensive end-to-end testing guidance.
 
 ### **Requirement Analysis Workflow**
 
@@ -29,13 +33,7 @@ When you cannot directly read other rules, they are located in the `.cursor/rule
 
 1. **Check Requirements File**: First, check if `requirements.md` exists in the project root
 2. **Generate Requirements**: If `requirements.md` doesn't exist, use the `@project-requirements.mdc` rule to generate comprehensive requirements
-3. **Analyze Requirements**: Read and analyze the requirements to understand:
-   - Core functionality needed
-   - User roles and permissions
-   - Data models and schemas
-   - UI/UX requirements
-   - Integration points
-   - Business logic requirements
+3. **Analyze Requirements**: Read and analyze the requirements to understand
 4. **Create Implementation Plan**: Based on requirements analysis, create a structured implementation plan
 5. **Start Implementation**: Begin implementing following the project state analysis workflow below
 
@@ -56,18 +54,28 @@ When you cannot directly read other rules, they are located in the `.cursor/rule
 
 - **Project Setup** → **Project Structure** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Build Verification** → **Development Server** → **End-to-End Testing** → **Production Optimization**
 
-### **Automated Workflow Sequence**
+### **Automated Workflow Sequence (non-blocking)**
 
-**Quality assurance workflow:**
+1. **Code Implementation**: Write/update application code per current requirement.
+2. **Lint Check**: Run `npm run lint`; fix all issues.
+3. **Build Verification**: Run `npm run build` and ensure a successful production build.
+4. **Preview (non-watch, time-boxed)**: If a preview is needed, run a non-watch server briefly, e.g. `timeout 120s npx serve -s dist`, then continue.
+5. **End-to-End Tests (no watch/UI)**: Run tests in non-watch mode, e.g. `npm test -- --watch=false` or `npx playwright test --reporter=line`. Do **not** use dev servers or watch/UIs here.
+6. **Error Detection**: Parse console output; collect and summarize errors/warnings.
+7. **Issue Resolution**: Fix detected issues and **repeat 2 → 5** until lint/build/tests pass.
+8. **Git Commit**: `git add -A && git commit -m "<concise summary of completed feature>"`.
+9. **DONE Output**: Print a concise DONE summary:
+   - files changed (paths),
+   - brief key diffs,
+   - how to run (`build`, `test`, optional preview command).
 
-1. **Code Implementation**: Write/update application code
-2. **Lint Check**: `npm run lint` - Fix compile-time issues
-3. **Build Verification**: `npm run build` - Ensure production readiness
-4. **Development Server**: Start development server, ensure to close any existing dev server running on port 3000 first
-5. **End-to-End Testing**: Execute comprehensive Puppeteer test suite with actual data inputs and validations (runs in foreground)
-6. **Error Detection**: Monitor console output for runtime issues
-7. **Issue Resolution**: Fix any detected errors or warnings
-8. **git add and git commit**: Deployable application with no errors
+### **Stop Conditions (the only times you pause)**
+
+1. **Credentials/ENV missing** and cannot proceed safely.
+2. **Ambiguous or unsafe fix** required for failing tests/build that needs a human decision.
+3. **Tool-call checkpoint reached** (agent often pauses around ~25 tool calls):
+   - When this happens, print exactly:
+     `PAUSED_AT_TOOLCALL_CHECKPOINT — say "continue" to resume`
 
 ### **Implementation Strategy**
 
@@ -80,12 +88,22 @@ When you cannot directly read other rules, they are located in the `.cursor/rule
 - **Single Responsibility**: Each component and function should have one clear purpose
 - **Continuous Progress**: AI proceeds through all stages without mandatory stops
 - **No Mock Data**: Avoid creating mock data - implement direct API integration from the start
-- **Named Exports**: Use named exports for better tree shaking and explicit imports
+- **Named Exports**: Use ESM named exports for better tree shaking and explicit imports
 - **Async/Await**: Prefer async/await for asynchronous code; handle errors with try/catch and avoid unhandled promise rejections
 - **Form Inputs**: Use `name` attribute instead of `id` for all form inputs to ensure proper form handling and accessibility
 - **Complete Feature Set**: Ensure all human requirements are fully implemented
 - **End-to-End Testing**: Comprehensive functional testing with actual data inputs and validations
 - **Quality Assurance**: Automated workflow with lint → build → development server → end-to-end testing
+
+### **Terminal & Long-Running Tasks Policy**
+
+- **Never** run watchers or foreground dev servers during Agent runs:
+  - Avoid: `npm run dev`, `vite dev`, `nodemon`, `jest --watch`, `playwright test --ui`.
+- Prefer non-watch commands that terminate:
+  - Lint: `npm run lint`
+  - Build: `npm run build`
+  - Tests: `npm test -- --watch=false` or `npx playwright test --reporter=line`
+- If a preview is necessary mid-run, use a **time-boxed** static server (e.g., `timeout 120s npx serve -s dist`) and then proceed.
 
 ### **Quality Standards**
 
