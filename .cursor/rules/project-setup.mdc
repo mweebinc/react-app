@@ -1,5 +1,5 @@
 ---
-description: Setup guide for React applications with Vite and Tailwind CSS using official Vite plugin - no PostCSS dependencies.
+description: Setup guide for React applications with Vite and Tailwind CSS using official Vite plugin - no PostCSS dependencies, including Progressive Web Application (PWA) capabilities.
 globs:
 alwaysApply: false
 ---
@@ -15,7 +15,98 @@ Setup guide for React applications with Vite and Tailwind CSS using the official
 - **@tailwindcss/vite** - Official Vite plugin for Tailwind CSS integration
 - **tailwindcss** - Utility-first CSS framework for rapid UI development
 - **react-infinite-scroll-component** - Infinite scrolling pagination for large datasets
-- **puppeteer** - Browser automation for console log capture and debugging (REQUIRED)
+- **puppeteer** - Browser automation for end-to-end testing and debugging (REQUIRED)
+- **vite-plugin-pwa** - Progressive Web Application capabilities
+- **workbox-window** - Service worker management for PWA
+
+## 📱 Progressive Web Application (PWA) Setup
+
+### LLM Agent PWA Implementation Instructions
+
+When implementing PWA capabilities in the current React project, the LLM Agent should follow these steps:
+
+#### 1. Install PWA Dependencies
+```bash
+npm install vite-plugin-pwa workbox-window
+```
+
+#### 2. Configure Vite PWA Plugin
+Update `vite.config.js` to include PWA configuration:
+```javascript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      manifest: {
+        name: '{{PROJECT_NAME}}',
+        short_name: '{{PROJECT_SHORT_NAME}}',
+        description: '{{PROJECT_DESCRIPTION}}',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+      }
+    })
+  ],
+  server: {
+    host: "0.0.0.0",
+    port: 3000,
+    open: true,
+  },
+})
+```
+
+**LLM Agent Instructions**: Replace the following placeholders based on the project name from `package.json`:
+- `{{PROJECT_NAME}}` - Use the project name from package.json (e.g., "cash-register" becomes "Cash Register")
+- `{{PROJECT_SHORT_NAME}}` - Use a shortened version (e.g., "CashRegister")
+- `{{PROJECT_DESCRIPTION}}` - Create a descriptive text based on the project purpose
+
+#### 3. Add PWA Icons
+Create PWA icon files in the `public` directory:
+- `pwa-192x192.png` (192x192 pixels)
+- `pwa-512x512.png` (512x512 pixels)
+- `apple-touch-icon.png` (180x180 pixels)
+- `masked-icon.svg` (monochrome icon)
+
+#### 4. Update HTML Meta Tags
+Add PWA meta tags to `index.html`:
+```html
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="{{PROJECT_NAME}}">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/masked-icon.svg" color="#000000">
+```
+
+#### 5. Register Service Worker
+The Vite PWA plugin automatically handles service worker registration. No additional code needed.
+
 
 ## Quick Setup Commands
 
@@ -24,10 +115,10 @@ Setup guide for React applications with Vite and Tailwind CSS using the official
 ### 1. Create Vite Project in Current Directory
 
 ```bash
-npm create vite@latest . -- --template react --
+npm create vite@latest . -- --template react
 ```
 
-**Note**: The `.` tells Vite to create the project in the current directory instead of creating a new subfolder.
+**Important**: Follow the exact command - the `.` creates project in current directory, `-- --template react` auto-selects React template.
 
 ### 2. Install Dependencies
 
@@ -56,136 +147,7 @@ export default defineConfig({
 });
 ```
 
-### 4. Setup Console Capture with Puppeteer (REQUIRED)
-
-#### Create Console Capture Scripts
-
-```javascript
-// scripts/ConsoleCapture.js
-import puppeteer from "puppeteer";
-import process from "process";
-
-class ConsoleCapture {
-  constructor() {
-    this.browser = null;
-    this.page = null;
-    this.isRunning = false;
-    this.routes = [];
-    this.timeout = 3000; // Default 3 seconds
-    this.url = "http://localhost:3000";
-  }
-  parseArguments() {
-    const args = process.argv.slice(2);
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-      const nextArg = args[i + 1];
-      if ((arg === "--routes" || arg === "-r") && nextArg && !nextArg.startsWith("-")) {
-        this.routes = nextArg.split(",").map((route) => route.trim());
-        i++;
-      } else if ((arg === "--timeout" || arg === "-t") && nextArg && !nextArg.startsWith("-")) {
-        this.timeout = parseInt(nextArg) * 1000;
-        i++;
-      } else if ((arg === "--url" || arg === "-u") && nextArg && !nextArg.startsWith("-")) {
-        this.url = nextArg;
-        i++;
-      } else if (arg === "--help" || arg === "-h") {
-        this.showHelp();
-        process.exit(0);
-      }
-    }
-    if (this.routes.length === 0) {
-      this.routes = ["/"];
-    }
-  }
-  showHelp() {
-    console.log(`
-Console Capture Tool - Runtime Error Detection
-Usage: node consoleCapture.js [options]
-Options:
-  -r, --routes <routes>   Comma-separated list of routes to test
-  -t, --timeout <seconds>  Timeout in seconds for each route
-  -u, --url <url>   Server URL for testing
-  -h, --help              Show this help message
-`);
-  }
-
-  async start() {
-    try {
-      this.parseArguments();
-      console.log(`🚀 Starting console capture with configuration:`);
-      console.log(`   Routes: ${this.routes.join(", ")}`);
-      console.log(`   Timeout: ${this.timeout / 1000} seconds per route`);
-      console.log(`   Server URL: ${this.url}\n`);
-      this.browser = await puppeteer.launch({
-        headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      });
-      this.page = await this.browser.newPage();
-      // Capture console output
-      this.page.on("console", (msg) => {
-        const timestamp = new Date().toISOString();
-        const type = msg.type();
-        const text = msg.text();
-        const url = this.page.url();
-
-        // Color-coded output
-        const colors = {
-          log: "\x1b[37m", // White
-          info: "\x1b[34m", // Blue
-          warn: "\x1b[33m", // Yellow
-          error: "\x1b[31m", // Red
-          debug: "\x1b[36m", // Cyan
-        };
-        const reset = "\x1b[0m";
-        const color = colors[type] || colors.log;
-        console.log(`${color}[${timestamp}] [${type.toUpperCase()}] [${url}] ${text}${reset}`);
-      });
-
-      // Capture page errors
-      this.page.on("pageerror", (error) => {
-        const timestamp = new Date().toISOString();
-        const url = this.page.url();
-        console.log(`\x1b[31m[${timestamp}] 🚨 PAGE ERROR [${url}]: ${error.message}\x1b[0m`);
-        console.log(`\x1b[31m  Stack: ${error.stack}\x1b[0m`);
-      });
-
-      // Test each route
-      for (const route of this.routes) {
-        const fullUrl = `${this.url}${route}`;
-        console.log(`\n🔍 Testing route: ${fullUrl}`);
-        try {
-          await this.page.goto(fullUrl, {
-            waitUntil: "networkidle0",
-            timeout: 30000,
-          });
-          console.log(`✅ Successfully loaded: ${fullUrl}`);
-          // Wait for potential runtime errors to appear
-          await new Promise((resolve) => setTimeout(resolve, this.timeout));
-        } catch (error) {
-          console.log(`❌ Failed to load: ${fullUrl}`);
-          console.log(`   Error: ${error.message}`);
-        }
-      }
-
-      console.log("\n✅ Console capture completed for all routes");
-      console.log("📊 Summary: All routes tested for runtime errors");
-      await this.browser.close();
-      process.exit(0);
-    } catch (error) {
-      console.error("❌ Failed to start console capture:", error.message);
-      if (this.browser) {
-        await this.browser.close();
-      }
-      process.exit(1);
-    }
-  }
-}
-
-const monitor = new ConsoleCapture();
-monitor.start().catch(console.error);
-```
-
-### 5. Import Tailwind CSS
+### 4. Import Tailwind CSS
 
 ```css
 /* src/index.css */
@@ -209,7 +171,7 @@ monitor.start().catch(console.error);
 ```
 
 
-### 6. Initialize Git Repository
+### 5. Initialize Git Repository
 
 ```bash
 git init
@@ -218,7 +180,4 @@ git init
 ```bash
 # Start development server (runs in background)
 npm run dev
-
-# Start console capture (runs in foreground - LLM agent waits for completion)
-node scripts/consoleMonitor.js --routes /,/signin,/signup,/dashboard,/other
 ```

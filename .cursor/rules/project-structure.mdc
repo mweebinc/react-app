@@ -3,6 +3,7 @@ description: Use component-based architecture with clear separation of concerns 
 globs:
 alwaysApply: false
 ---
+
 ## Project Structure
 
 ### Directory Organization
@@ -13,7 +14,8 @@ src/
 ├── AppProvider.jsx       # Global state provider
 ├── AppContext.jsx        # React context
 ├── portal.js             # Portal system for rendering components outside DOM hierarchy (modals, toasts)
-├── useScreenSize.js      # hook for responsive screen size detection
+├── hooks/
+│   └── useScreenSize.js  # hook for responsive screen size detection
 ├── pages/                # Page components
 │   ├── MainPage.jsx      # Main page
 │   ├── SigninPage.jsx    # Authentication page
@@ -37,7 +39,6 @@ src/
 │   └── [other-components].jsx # Other reusable components
 └── [utility-files]       # Utility functions and helpers
 ```
-
 
 ```javascript
 //src/portal.js
@@ -95,21 +96,47 @@ class Portal {
     // implement it
   }
 }
-export default new Portal();
+const portal = new Portal();
+export { portal };
 ```
 
 ```javascript
+//src/App.jsx
 function App() {
   return (
-    <AppProvider>
-      <Router>
-        <Routes>
-          <Route path="/signin" element={<SignInPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/*" element={<MainPage />} />
-        </Routes>
-      </Router>
-    </AppProvider>
+    <Router>
+      <Routes>
+        <Route path="/signin" element={<SignInPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/*" element={<MainPage />} />
+      </Routes>
+    </Router>
   );
 }
+```
+
+```javascript
+//src/AppProvider.jsx
+import React, { useState } from "react";
+import { AppContext } from "./AppContext";
+function AppProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [schemas, setSchemas] = useState([]);
+  const value = {
+    user,
+    setUser,
+    schemas,
+    setSchemas,
+  };
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+}
+```
+
+```javascript
+//src/main.jsx
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <AppProvider>
+    <App />
+  </AppProvider>
+);
 ```

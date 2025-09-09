@@ -554,46 +554,51 @@ src/
 
 **Schema Reuse Pattern**: Always get schemas from AppContext instead of individual API calls to ensure consistency across the entire application and avoid duplicate network requests.
 
-```javascript
-function MainPage() {
-  const [loading, setLoading] = useState(true);
-  const { schemas, setSchemas } = useContext(AppContext);
-  const { find } = useFindSchemas();
-
-  const initializeApp = useCallback(async () => {
-    try {
-      // Load schemas for navigation
-      const result = await find();
-      if (result) {
-        setSchemas(result);
-      }
-    } catch (error) {
-      console.error("Failed to initialize app:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [find, setSchemas]);
-
-  useEffect(() => {
-    initializeApp();
-  }, [initializeApp]);
-
-
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Spinner size="xl" />
-          <p className="mt-4 text-gray-600">Initializing...</p>
-        </div>
-      </div>
-    );
-  }
-}
-```
 
 ```javascript
   const { schemas } = useContext(AppContext);
   const schema = schemas.find(s => s.name === collection);
+```
+
+
+```javascript
+//src/pages/ProtectedRoute.jsx
+const ProtectedRoute = ({ children }) => {
+  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const { user, setUser, setSchemas } = useContext(AppContext);
+  const { get } = useGetCurrentUser();
+  const { find } = useFindSchemas();
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!user && loading) {
+          const fetchedUser = await get();
+          if (fetchedUser) setUser(fetchedUser);
+        }
+        if (user) {
+          const schemas = await find({});
+          if (schemas) setSchemas(schemas);
+        }
+        setLoading(false);
+      } catch (_) {}
+    })();
+  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+  return user ? (
+    children
+  ) : (
+    <Navigate to="/signin" state={{ from: location }} replace />
+  );
+};
+```
+```javascript
+//src/App.jsx
+<Route path="/*" element={<ProtectedRoute><MainPage /></ProtectedRoute>} />
 ```

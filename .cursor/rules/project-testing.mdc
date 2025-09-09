@@ -1,0 +1,143 @@
+---
+description: This rule guides LLM agents on how to leverage Puppeteer for comprehensive end-to-end testing of React applications.
+alwaysApply: false
+---
+# Project Testing Rule
+
+## Core Testing Philosophy
+
+**End-to-End Testing with Real Data**: Implement comprehensive functional testing that validates user workflows through actual data inputs, form submissions, and business logic validation.
+
+**Puppeteer-Only Testing**: All tests use Puppeteer exclusively - no additional testing frameworks or dependencies. Configure Puppeteer with `headless: false` for browser-controlled testing that allows visual observation of test execution.
+
+## Performance Optimization
+
+**Visual Testing Configuration**: Tests should run with visual observation enabled for human monitoring and debugging. Optimize for reliability and visibility:
+- **Headless Mode**: Use `headless: false` for visual observation of test execution
+- **Zero Delays**: Set `slowMo: 0` to eliminate artificial delays
+- **Fast Navigation**: Use `waitUntil: 'domcontentloaded'` instead of `networkidle0`
+- **Minimal Waits**: Only wait for elements when necessary, avoid arbitrary timeouts
+- **Parallel Execution**: Run independent test suites concurrently when possible
+- **Wait Strategy**: Only wait for elements that are actually needed for the test to proceed. If a selector is available, proceed immediately.
+
+## Testing Strategy
+
+### Test Creation Pattern
+Create focused test scripts in `scripts/` folder following this hierarchy:
+
+1. **Authentication Foundation**: `test-signup.js`, `test-signin.js`
+2. **Feature-Specific**: `test-[feature-name].js` (one script per major feature)
+3. **Integration**: `test-navigation.js`, `test-offline.js`
+
+### Test Design Principles
+
+**Single Responsibility**: Each script tests ONE specific feature or functionality
+- ✅ `test-signup.js` - Only user registration
+- ❌ `test-authentication.js` - Both signup AND signin
+
+**Real Data Validation**: Use realistic test data that mirrors production scenarios
+- Include edge cases and boundary conditions
+- Test form validation, business logic, and data persistence
+- Validate both happy path and error scenarios
+
+**Comprehensive Coverage**: Test all critical user workflows
+- Authentication flows (signup/signin)
+- Core application features
+- Navigation and routing
+- Offline capabilities and sync
+
+### Test Implementation Approach
+
+**Pre-Test Validation**: Before writing any test, verify that input names and button selectors match the actual page elements
+- Inspect form inputs to ensure `name` attributes are correctly set
+- Verify button text, classes, and IDs match the test selectors
+- Confirm all interactive elements are accessible and properly identified
+- This prevents test failures due to mismatched selectors and ensures reliable automation
+
+**Modular Structure**: Create reusable test utilities
+- Browser initialization and cleanup
+- Form filling and validation helpers
+- Error capture and reporting
+- Business logic validation
+
+**Error Handling**: Capture comprehensive error information
+- Browser console errors and warnings
+- Network request failures
+- Form validation errors
+- UI interaction failures
+
+**Test Data Management**: Use consistent, realistic test data
+- Default credentials for authentication
+- Invalid data for validation testing
+- Edge cases and boundary conditions
+
+## Quality Assurance Standards
+
+### Test Reliability
+- Use stable selectors and wait strategies
+- Implement proper error handling and cleanup
+- Handle flaky tests appropriately
+- Generate comprehensive reports with timestamps and metrics
+
+### Test Maintenance
+- Update test data to match application changes
+- Add new test cases for new features
+- Remove obsolete tests
+- Optimize test performance
+
+## Implementation Guidelines
+
+### When to Create Tests
+- After implementing new features
+- Before major deployments
+- When fixing critical bugs
+- During refactoring efforts
+
+### Test Execution Strategy
+- Run tests in controlled environments
+- Ensure development server is running
+- Clean up test data after execution
+- Generate comprehensive reports
+
+## Iterative Testing Loop
+
+**Continuous Quality Assurance**: After tests are executed, follow this iterative loop until all tests pass without issues:
+
+### Post-Test Analysis
+1. **Observe Test Results**: Carefully review test output, error messages, and browser console logs
+2. **Identify Root Cause**: Determine if failures are due to:
+   - Test implementation issues (incorrect selectors, timing, data)
+   - Application code bugs (functionality, UI, business logic)
+   - Environment issues (server, dependencies, configuration)
+
+### Problem Resolution Process
+3. **Fix Test Issues**: If problems are in test code:
+   - Update selectors to match actual DOM elements
+   - Adjust timing and wait strategies
+   - Correct test data and validation logic
+   - Improve error handling and reporting
+
+4. **Fix Application Code**: If problems are in application code:
+   - Debug and resolve functionality issues
+   - Fix UI/UX problems
+   - Correct business logic errors
+   - Address performance and reliability issues
+
+### Continuous Loop
+5. **Re-run Tests**: Execute the test suite again after fixes
+6. **Validate Results**: Ensure all tests now pass and no new issues are introduced
+7. **Repeat Until Success**: Continue the loop until:
+   - All tests pass without errors
+   - No console warnings or errors
+   - Application functions correctly in all tested scenarios
+   - No regressions are detected
+
+### Quality Gates
+- **Zero Tolerance**: No test failures are acceptable in production-ready code
+- **Complete Coverage**: All critical user workflows must be validated
+- **Stable Performance**: Tests must run consistently without flakiness
+- **Clean Output**: No console errors or warnings during test execution
+
+This iterative approach ensures that both test quality and application functionality reach production standards through continuous improvement and validation.
+
+This rule enables autonomous LLM agents to create comprehensive end-to-end test suites that validate React applications through real user workflows.

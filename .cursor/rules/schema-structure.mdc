@@ -16,6 +16,19 @@ This rule defines schema structure and definition patterns for schema-driven Rea
 - **Frontend Extensions**: UI-specific properties can be added for dynamic form generation
 - **Runtime Flexibility**: Schema changes take effect without code deployment
 
+## Naming Conventions
+
+- **Schema Collections**: Use `snake_case` and prefer single words when possible
+  - ✅ `users` instead of `user_profiles`
+  - ✅ `logs` instead of `attendance_logs`
+  - ✅ `products` instead of `product_catalog`
+- **Schema Fields**: Use `snake_case` and prefer single words when possible
+  - ✅ `created` instead of `created_at`
+  - ✅ `updated` instead of `updated_at` 
+  - ✅ `creator` instead of `created_by`
+  - ✅ `editor` instead of `edited_by`
+- **JavaScript Code**: Use `camelCase` for variables, functions, and objects
+
 ## Schema Structure
 
 ### Dynamic Properties Concept
@@ -33,7 +46,7 @@ The backend provides dynamic properties by default for all schemas:
 
 ```json
 {
-  "collection": "MyCollection",
+  "collection": "my_collection",
   "fields": {
     "id": {
       "type": "String",
@@ -72,7 +85,7 @@ Frontend can extend schemas with UI-specific properties for dynamic form generat
 
 ```json
 {
-  "collection": "MyCollection",
+  "collection": "my_collection",
   "fields": {
     "field_name": {
       "type": "String",
@@ -178,9 +191,11 @@ Frontend can extend schemas with UI-specific properties for dynamic form generat
 - `${user.name}` - Current authenticated user name
 - `${user.email}` - Current authenticated user email
 - `${object.id}` - ID of the object being processed
-- `${object.fieldName}` - Value of specific field in current object
+- `${object.field_name}` - Value of specific field in current object
 
 ### System-Generated Values
 
 - `${crypto.uuid}` - Generate UUID v4
 - `${crypto.randomHex}` - Generate random hexadecimal string
+
+

@@ -21,8 +21,25 @@ alwaysApply: true
 **The AI is fully autonomous and will analyze the current project state to determine what needs to be implemented to achieve a production-ready application.**
 
 **Project State Analysis:**
-When you cannot directly read other rules, they are located in the `.cursor/rules/` folder Use the `fetch_rules` tool to retrieve specific rules when needed for implementation guidance.
+When you cannot directly read other rules, they are located in the `.cursor/rules/` folder. Use the `fetch_rules` tool to retrieve all the rules related to the current human task for implementation guidance.
 
+### **Requirement Analysis Workflow**
+
+**When a human requests to create something (e.g., "create a POS system"):**
+
+1. **Check Requirements File**: First, check if `requirements.md` exists in the project root
+2. **Generate Requirements**: If `requirements.md` doesn't exist, use the `@project-requirements.mdc` rule to generate comprehensive requirements
+3. **Analyze Requirements**: Read and analyze the requirements to understand:
+   - Core functionality needed
+   - User roles and permissions
+   - Data models and schemas
+   - UI/UX requirements
+   - Integration points
+   - Business logic requirements
+4. **Create Implementation Plan**: Based on requirements analysis, create a structured implementation plan
+5. **Start Implementation**: Begin implementing following the project state analysis workflow below
+
+**Implementation State Analysis:**
 
 1. **Empty Project**: If no React project exists, implement project setup with Vite and Tailwind CSS without postcss
 2. **Basic Setup**: If project exists but lacks structure, implement project structure
@@ -32,12 +49,12 @@ When you cannot directly read other rules, they are located in the `.cursor/rule
 6. **Code Quality Check**: Run `npm run lint` to ensure code quality and fix any linting issues
 7. **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
 8. **Development Server**: Start development server (runs in background) for runtime testing, ensure to close any existing dev server running on port 3000 first
-9. **Console Log Capture**: Start Puppeteer console capture to test all routes for runtime errors (runs in foreground)
+9. **End-to-End Testing**: Execute comprehensive Puppeteer test suite with actual data inputs and validations (runs in foreground)
 10. **git add and git commit**: Ensure all requirements are met and app is deployable
 
 **Implementation Priority:**
 
-- **Project Setup** → **Project Structure** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Build Verification** → **Development Server** → **Runtime Capture** → **Production Optimization**
+- **Project Setup** → **Project Structure** → **Mobile Implementation** → **UI Components** → **Core Pages** → **API Integration** → **Code Quality** → **Build Verification** → **Development Server** → **End-to-End Testing** → **Production Optimization**
 
 ### **Automated Workflow Sequence**
 
@@ -47,7 +64,7 @@ When you cannot directly read other rules, they are located in the `.cursor/rule
 2. **Lint Check**: `npm run lint` - Fix compile-time issues
 3. **Build Verification**: `npm run build` - Ensure production readiness
 4. **Development Server**: Start development server, ensure to close any existing dev server running on port 3000 first
-5. **Console Capture**: Start Puppeteer console capture to test all routes for runtime errors (runs in foreground)
+5. **End-to-End Testing**: Execute comprehensive Puppeteer test suite with actual data inputs and validations (runs in foreground)
 6. **Error Detection**: Monitor console output for runtime issues
 7. **Issue Resolution**: Fix any detected errors or warnings
 8. **git add and git commit**: Deployable application with no errors
@@ -64,9 +81,11 @@ When you cannot directly read other rules, they are located in the `.cursor/rule
 - **Continuous Progress**: AI proceeds through all stages without mandatory stops
 - **No Mock Data**: Avoid creating mock data - implement direct API integration from the start
 - **Named Exports**: Use named exports for better tree shaking and explicit imports
+- **Async/Await**: Prefer async/await for asynchronous code; handle errors with try/catch and avoid unhandled promise rejections
+- **Form Inputs**: Use `name` attribute instead of `id` for all form inputs to ensure proper form handling and accessibility
 - **Complete Feature Set**: Ensure all human requirements are fully implemented
-- **Runtime Capture**: Real-time error detection and debugging capabilities
-- **Quality Assurance**: Automated workflow with lint → build → development server → console capture
+- **End-to-End Testing**: Comprehensive functional testing with actual data inputs and validations
+- **Quality Assurance**: Automated workflow with lint → build → development server → end-to-end testing
 
 ### **Quality Standards**
 
@@ -75,5 +94,32 @@ When you cannot directly read other rules, they are located in the `.cursor/rule
 - **Component Consistency**: Maintain consistent design patterns across all UI components
 - **Code Quality**: Run `npm run lint` and fix all linting issues before proceeding
 - **Build Verification**: Run `npm run build` to ensure successful compilation and production readiness
-- **Runtime Quality**: Use Puppeteer console capture to test all routes and detect runtime issues
+- **Runtime Quality**: Use comprehensive Puppeteer end-to-end testing to validate all functionality with actual data
 - **Error-Free Deployment**: No console errors or warnings in production build
+
+### **API Schema Error Handling**
+
+**When encountering API schema errors (e.g., key mismatches, missing fields, validation errors):**
+
+1. **Identify Schema Issues**: Detect schema-related errors during API integration or testing
+2. **Check Current Schema**: Use `mcp_innque_get_schema` or `mcp_innque_find_schema` to retrieve existing collection schema
+3. **Analyze Schema Structure**: Review schema against `@schema-structure.mdc` conventions:
+   - Verify field naming follows `snake_case` convention
+   - Check field types match expected data types (String, Number, Boolean, Date, Array, Pointer, Relation, ACL)
+   - Ensure required fields are properly defined
+   - Validate permission settings follow `@schema-structure.mdc` patterns
+4. **Fix Schema Mismatches**: Use `mcp_innque_update_schema` to correct schema issues:
+   - Add missing fields with proper types and properties
+   - Update field definitions to match frontend expectations
+   - Adjust permissions according to `@schema-structure.mdc` guidelines
+   - Ensure field names match frontend code expectations
+5. **Create Missing Schemas**: If schema doesn't exist, use `mcp_innque_create_schema` with proper structure
+6. **Validate Schema Changes**: Test API operations to ensure schema fixes resolve the errors
+7. **Update Frontend Code**: Adjust frontend code if needed to match corrected schema structure
+
+**Common Schema Error Patterns:**
+- **Key Mismatch**: Field names in frontend don't match schema field names
+- **Missing Fields**: Required fields not defined in schema
+- **Type Mismatch**: Frontend expects different data type than schema defines
+- **Permission Issues**: Access control rules prevent required operations
+- **Validation Errors**: Field constraints not met by data being sent

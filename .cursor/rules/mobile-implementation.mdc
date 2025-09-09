@@ -155,6 +155,7 @@ MainLayout.Context = Context;
 - **Routing Setup**: Implement React Router Routes within main content area
 
 ```javascript
+//src/pages/MainPage.jsx
 render() {
   return (
     <MainLayout>
