@@ -358,6 +358,7 @@ async function request(path, { method = "GET", body = null, headers: customHeade
       }
       return res.status === 204 ? null : res.json();
     } catch (err) {
+      console.error("[API_ERROR]", {url,method, message: err?.message || String(err) });
       // Retry on timeout or network errors
       if ((err instanceof TypeError || /network/i.test(err.message) || /timeout/i.test(err.message)) && attempt < retries) {
         const backoff = Math.pow(2, attempt) * 200 + Math.random() * 100;

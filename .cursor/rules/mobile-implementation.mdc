@@ -54,6 +54,7 @@ alwaysApply: false
 The AI agent will analyze user requirements and automatically select the most appropriate design pattern based on the application's goals and target audience.
 
 #### Available Design Patterns
+
 **Skeuomorphic Design**
 **Flat Design**
 **Material Design (Google)**
@@ -65,7 +66,6 @@ The AI agent will analyze user requirements and automatically select the most ap
 **Claymorphism**
 **Metro / Fluent Design (Microsoft)**
 **Gamification UI**
-
 
 ### Implementation Guidelines
 
@@ -98,7 +98,6 @@ The AI agent will analyze user requirements and automatically select the most ap
 - **No Horizontal Scroll**: Eliminate horizontal scrolling on mobile devices
 - **Avoid Duplicate Actions**: Prevent duplicate action buttons across different UI areas (e.g., don't have Save button in both form and Navbar)
 
-
 ## Key Implementation Rules
 
 1. **Always start with mobile-first responsive design**
@@ -124,22 +123,33 @@ function useScreenSize() {
 ### MainLayout Component Implementation
 
 ```javascript
+//src/components/MainLayout.jsx
 const Context = createContext();
-function MainLayout({ children }) {
+function MainLayout({ children, menus }) {
   const isMobile = useScreenSize();
   const [show, setShow] = useState(!isMobile);
-  React.useEffect(() => {
+  useEffect(() => {
     setShow(!isMobile);
   }, [isMobile]);
+
   const mainContentStyle = isMobile
     ? {}
     : {
         marginLeft: show ? "270px" : "0px",
         transition: "margin-left 0.3s ease-in-out",
       };
+
   return (
     <Context.Provider value={{ show, setShow, isMobile }}>
-      <div style={mainContentStyle} className="min-h-screen bg-gray-50">
+      <div style={mainContentStyle} className="min-h-screen">
+        <Sidebar show={show} onSetShow={setShow}>
+          <NavSidebar
+            className="lg:w-[270px]"
+            menus={menus}
+            isMobile={isMobile}
+            setShow={setShow}
+          />
+        </Sidebar>
         {children}
       </div>
     </Context.Provider>
@@ -158,24 +168,7 @@ MainLayout.Context = Context;
 //src/pages/MainPage.jsx
 render() {
   return (
-    <MainLayout>
-      <MainLayout.Context.Consumer>
-          {({show,setShow,isMobile}) => {
-            return (
-              <Sidebar
-                show={show}
-                onSetShow={setShow}
-                position="left"
-                className="bg-white">
-                <NavSidebar
-                  className="lg:w-[270px]"
-                  menus={menus}
-                  isMobile={isMobile}
-                  setShow={setShow} />
-              </Sidebar>
-            );
-          }}
-      </MainLayout.Context.Consumer>
+    <MainLayout menus={menus}>
       <Routes>
         <Route path={"/"} element={<Dashboard/>}/>
         <Route path="/collections/:collection" element={<CollectionListPage />} />
@@ -210,7 +203,15 @@ const Navbar = ({ title = "App", children, loading = false }) => {
 - **Context Integration**: Uses MainLayout.Context for sidebar state management
 
 ```javascript
-function Sidebar({ show = false, onSetShow, position = "left", children, className = "", dragToggleDistance = 30, touchHandleWidth = 20 }) {
+function Sidebar({
+  show = false,
+  onSetShow,
+  position = "left",
+  children,
+  className = "",
+  dragToggleDistance = 30,
+  touchHandleWidth = 20,
+}) {
   const [isDragging, setIsDragging] = useState(false);
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchCurrentX, setTouchCurrentX] = useState(null);
@@ -230,9 +231,32 @@ function Sidebar({ show = false, onSetShow, position = "left", children, classNa
   const getMovePercent = () => {
     if (!touchStartX || !touchCurrentX || !sidebarWidth) return 0;
     if (position === "right") {
-      return show ? Math.max(0, Math.min(100, ((touchStartX - touchCurrentX + sidebarWidth) / sidebarWidth) * 100)) : Math.max(0, Math.min(100, ((window.innerWidth - touchCurrentX) / sidebarWidth) * 100));
+      return show
+        ? Math.max(
+            0,
+            Math.min(
+              100,
+              ((touchStartX - touchCurrentX + sidebarWidth) / sidebarWidth) *
+                100
+            )
+          )
+        : Math.max(
+            0,
+            Math.min(
+              100,
+              ((window.innerWidth - touchCurrentX) / sidebarWidth) * 100
+            )
+          );
     }
-    return show ? Math.max(0, Math.min(100, ((touchCurrentX - touchStartX + sidebarWidth) / sidebarWidth) * 100)) : Math.max(0, Math.min(100, (touchCurrentX / sidebarWidth) * 100));
+    return show
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            ((touchCurrentX - touchStartX + sidebarWidth) / sidebarWidth) * 100
+          )
+        )
+      : Math.max(0, Math.min(100, (touchCurrentX / sidebarWidth) * 100));
   };
 
   const percentage = getMovePercent();
@@ -243,14 +267,20 @@ function Sidebar({ show = false, onSetShow, position = "left", children, classNa
     const handleTouchMove = (e) => {
       if (isDragging) {
         e.preventDefault();
-        if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = requestAnimationFrame(() => setTouchCurrentX(e.touches[0].clientX));
+        if (animationFrameRef.current)
+          cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = requestAnimationFrame(() =>
+          setTouchCurrentX(e.touches[0].clientX)
+        );
       }
     };
 
     const handleTouchEnd = () => {
       if (isDragging) {
-        if ((show && percentage < 100 - dragToggleDistance) || (!show && percentage > dragToggleDistance)) {
+        if (
+          (show && percentage < 100 - dragToggleDistance) ||
+          (!show && percentage > dragToggleDistance)
+        ) {
           onSetShow(!show);
         }
         setIsDragging(false);
@@ -269,16 +299,27 @@ function Sidebar({ show = false, onSetShow, position = "left", children, classNa
     return () => {
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (animationFrameRef.current)
+        cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [touchSupported, isDragging, show, onSetShow, dragToggleDistance, percentage]);
+  }, [
+    touchSupported,
+    isDragging,
+    show,
+    onSetShow,
+    dragToggleDistance,
+    percentage,
+  ]);
 
   const handleTouchStart = (e) => {
     if (!touchSupported || isDragging) return;
     const touch = e.touches[0];
     if (show && sidebarRef.current) {
       const rect = sidebarRef.current.getBoundingClientRect();
-      const isNearEdge = position === "left" ? touch.clientX >= rect.right - 40 : touch.clientX <= rect.left + 40;
+      const isNearEdge =
+        position === "left"
+          ? touch.clientX >= rect.right - 40
+          : touch.clientX <= rect.left + 40;
       if (!isNearEdge) return;
     }
     setIsDragging(true);
@@ -287,8 +328,17 @@ function Sidebar({ show = false, onSetShow, position = "left", children, classNa
   };
 
   const getTransform = () => {
-    if (isDragging) return position === "right" ? `translateX(${100 - percentage}%)` : `translateX(-${100 - percentage}%)`;
-    return position === "right" ? (show ? "translateX(0%)" : "translateX(100%)") : show ? "translateX(0%)" : "translateX(-100%)";
+    if (isDragging)
+      return position === "right"
+        ? `translateX(${100 - percentage}%)`
+        : `translateX(-${100 - percentage}%)`;
+    return position === "right"
+      ? show
+        ? "translateX(0%)"
+        : "translateX(100%)"
+      : show
+      ? "translateX(0%)"
+      : "translateX(-100%)";
   };
 
   const shouldShowDragHandle = touchSupported && !show;
@@ -296,10 +346,22 @@ function Sidebar({ show = false, onSetShow, position = "left", children, classNa
 
   return (
     <>
-      {shouldShowDragHandle && <div className={`fixed top-0 bottom-0 z-50 touch-manipulation lg:hidden ${isRight ? "right-0" : "left-0"}`} style={{ width: touchHandleWidth }} onTouchStart={handleTouchStart} />}
+      {shouldShowDragHandle && (
+        <div
+          className={`fixed top-0 bottom-0 z-50 touch-manipulation lg:hidden ${
+            isRight ? "right-0" : "left-0"
+          }`}
+          style={{ width: touchHandleWidth }}
+          onTouchStart={handleTouchStart}
+        />
+      )}
       {touchSupported && (
         <div
-          className={`fixed inset-0 z-50 transition-opacity duration-300 ease-in-out ${show ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
+          className={`fixed inset-0 z-50 transition-opacity duration-300 ease-in-out ${
+            show
+              ? "opacity-100 visible pointer-events-auto"
+              : "opacity-0 invisible pointer-events-none"
+          }`}
           style={
             isDragging
               ? {
@@ -317,11 +379,15 @@ function Sidebar({ show = false, onSetShow, position = "left", children, classNa
 
       <div
         ref={sidebarRef}
-        className={`fixed top-0 h-full z-50 lg:z-30 shadow-lg overflow-y-auto ${isRight ? "right-0" : "left-0"} ${className}`}
+        className={`fixed top-0 h-full z-50 lg:z-30 shadow-lg overflow-y-auto ${
+          isRight ? "right-0" : "left-0"
+        } ${className}`}
         style={{
           transform: getTransform(),
           WebkitTransform: getTransform(),
-          transition: isDragging ? "transform 0s ease-in-out" : "transform 300ms ease-in-out",
+          transition: isDragging
+            ? "transform 0s ease-in-out"
+            : "transform 300ms ease-in-out",
         }}
         onTouchStart={shouldShowDragHandle ? undefined : handleTouchStart}
       >
