@@ -15,10 +15,12 @@ alwaysApply: false
 ## Jest + Puppeteer Usage Rules
 
 ### Jest Configuration
+- **Create `jest.config.cjs`**: Create Jest configuration file in project root
 - **Test Files**: Use `.test.js` extension in `tests/` folder
 - **Test Structure**: Use `describe()` blocks for grouping, `test()` or `it()` for individual tests
 - **Setup/Teardown**: Use `beforeEach()` and `afterEach()` for browser management
 - **Async Testing**: Use `async/await` for Puppeteer operations
+- **Module System**: Use CommonJS (`require()`) for simplicity since Jest uses CommonJS by default
 
 ### Puppeteer Integration
 - **Browser Launch**: Launch browser in `beforeEach()`, close in `afterEach()`

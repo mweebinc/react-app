@@ -265,7 +265,7 @@ DELETE /schemas/{schema_name}
 ### Modern API Client Implementation
 
 ```javascript
-// api.js
+//src/api.js
 
 const API_BASE = "https://api.innque.com/v1";
 const APP_ID = import.meta.env.VITE_APP_ID || "your-application-id";
