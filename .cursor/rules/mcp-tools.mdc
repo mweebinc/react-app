@@ -1,5 +1,5 @@
 ---
-description: Use Innque API tools for schema management and object management operations.
+description: Use MCP Tool to update, create schema and object management operations for Innque API.
 globs: 
 alwaysApply: false
 ---

@@ -1,5 +1,5 @@
 ---
-description: Implement secure CRUD operations with error handling, authentication, and resilience strategies for Innque API integration.
+description: Implement secure CRUD operations with error handling, authentication, and resilience strategies for Innque API integration through reusable usecases.
 globs:
 alwaysApply: false
 ---

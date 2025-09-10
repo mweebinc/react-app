@@ -131,6 +131,7 @@ Create focused test files in `tests/` folder following this hierarchy:
 ### Test Execution Strategy
 - **Run Tests**: Use `npm test` or `jest` command to execute all tests
 - **Single Test**: Use `npm test -- [test-file-name]` to run specific test files
+- **No Watch Mode**: run tests once and exit (prevents watch mode)
 - **Environment**: Ensure development server is running on localhost:3000
 - **Cleanup**: Clean up test data after execution
 
