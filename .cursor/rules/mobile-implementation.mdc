@@ -113,6 +113,7 @@ The AI agent will analyze user requirements and automatically select the most ap
 ### useScreenSize Hook Implementation
 
 ```javascript
+//hooks/useScreenSize.js
 function useScreenSize() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   // Add resize listener and cleanup
@@ -125,7 +126,7 @@ function useScreenSize() {
 ```javascript
 //src/components/MainLayout.jsx
 const Context = createContext();
-function MainLayout({ children, menus }) {
+function MainLayout({ children,menus }) {
   const isMobile = useScreenSize();
   const [show, setShow] = useState(!isMobile);
   useEffect(() => {
@@ -138,7 +139,6 @@ function MainLayout({ children, menus }) {
         marginLeft: show ? "270px" : "0px",
         transition: "margin-left 0.3s ease-in-out",
       };
-
   return (
     <Context.Provider value={{ show, setShow, isMobile }}>
       <div style={mainContentStyle} className="min-h-screen">

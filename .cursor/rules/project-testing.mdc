@@ -37,3 +37,7 @@ alwaysApply: false
 **Test Data Management**: Use consistent, realistic test data that supports comprehensive validation scenarios while maintaining test isolation.
 
 **Continuous Integration**: Integrate testing into the development workflow - run tests after feature implementation, before deployments, and during refactoring efforts.
+
+## Test Execution Workflow
+
+**Immediate Test Execution**: After creating any test script, immediately run the test to validate functionality and catch issues early. Use `node tests/test-[feature-name].js` to execute individual test files and verify they work correctly before proceeding with additional development.
