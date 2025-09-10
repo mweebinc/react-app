@@ -4,25 +4,11 @@ globs:
 alwaysApply: false
 ---
 
-# Project Setup
-
-Setup guide for React applications with Vite and Tailwind CSS using the official Vite plugin without PostCSS dependencies.
-
-### Key Dependencies
-
-- **react** - Core framework for building user interfaces
-- **react-router-dom** - Client-side routing for React applications
-- **@tailwindcss/vite** - Official Vite plugin for Tailwind CSS integration
-- **tailwindcss** - Utility-first CSS framework for rapid UI development
-- **react-infinite-scroll-component** - Infinite scrolling pagination for large datasets
-- **puppeteer** - Browser automation for end-to-end testing and debugging (REQUIRED)
-
-
-## Quick Setup Commands
+# Quick Setup Commands
 
 > **Important**: This setup creates the React project directly in the current directory. Do NOT create a subfolder - all files will be placed in your current working directory.
 
-### 1. Create Vite Project in Current Directory
+## 1. Create Vite Project in Current Directory
 
 ```bash
 npm create vite@latest . -- --template react
@@ -30,7 +16,7 @@ npm create vite@latest . -- --template react
 
 **Important**: Follow the exact command - the `.` creates project in current directory, `-- --template react` auto-selects React template.
 
-### 2. Install Dependencies
+## 2. Install Dependencies
 
 ```bash
 npm install tailwindcss @tailwindcss/vite react-infinite-scroll-component
@@ -39,7 +25,7 @@ npm install --save-dev puppeteer
 
 **Important**: Do NOT install PostCSS or any PostCSS plugins. The `@tailwindcss/vite` plugin handles all CSS processing automatically without requiring PostCSS configuration.
 
-### 3. Configure Vite Plugin
+## 3. Configure Vite Plugin
 
 ```javascript
 // vite.config.js
@@ -57,7 +43,7 @@ export default defineConfig({
 });
 ```
 
-### 4. Import Tailwind CSS
+## 4. Import Tailwind CSS
 
 ```css
 /* src/index.css */
@@ -80,8 +66,7 @@ export default defineConfig({
 }
 ```
 
-
-### 5. Initialize Git Repository
+## 5. Initialize Git Repository
 
 ```bash
 git init

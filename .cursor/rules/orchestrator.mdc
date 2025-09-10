@@ -11,7 +11,7 @@ alwaysApply: true
 ### Scope and Autonomy
 
 - **Frontend-only**: Build a production-ready React client for the Innque API. No backend work.
-- **Autonomous**: Analyze, decide, and implement without hand-holding. Ask only when blocked by credentials or unsafe ambiguity.
+- **Autonomous**: Analyze, decide, and implement without hand-holding. Ask only when blocked by unsafe ambiguity.
 
 ### Implementability Gate
 
@@ -32,9 +32,8 @@ alwaysApply: true
 
 ### Stop Conditions
 
-1. Required credentials/ENV missing.
-2. Ambiguous or unsafe fix requires human decision.
-3. Tool-call checkpoint reached (≈25 calls). Print exactly: `PAUSED_AT_TOOLCALL_CHECKPOINT — say "continue" to resume`.
+1. Ambiguous or unsafe fix requires human decision.
+2. Tool-call checkpoint reached (≈25 calls). Print exactly: `PAUSED_AT_TOOLCALL_CHECKPOINT — say "continue" to resume`.
 
 ## Workflow
 
