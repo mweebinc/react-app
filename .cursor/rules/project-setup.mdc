@@ -11,7 +11,7 @@ alwaysApply: false
 ## 1. Create Vite Project in Current Directory
 
 ```bash
-npm create vite@latest . -- --template react
+echo -e "\033[B\033[B\r" | npm create vite@latest . -- --template react
 ```
 
 **Important**: Follow the exact command - the `.` creates project in current directory, `-- --template react` auto-selects React template.
