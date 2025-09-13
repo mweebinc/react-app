@@ -4,265 +4,125 @@ globs:
 alwaysApply: false
 ---
 
-# REST API implementation
+# REST API Implementation
 
-## Objective
+## Core Philosophy
 
-Guide REST API implementation through **generic, reusable React hooks** that eliminate redundancy and enable creative adaptation. Focus on **pattern recognition** and **purpose-driven design** rather than creating domain-specific implementations.
+**Generic over specific**: Build reusable hooks that adapt to any domain rather than creating domain-specific implementations. Focus on **pattern recognition** and **purpose-driven design**.
 
----
+## Implementation Principles
 
-## 🧩 Core Principles
+### API Client Architecture
+- **Base URL**: `https://api.innque.com/v1`
+- **Authentication**: JWT tokens via secure cookies, fallback to `X-Application-Id`
+- **Resilience**: Exponential backoff retry, timeout handling, graceful error recovery
+- **Security**: Automatic token management, secure cookie storage, proper CORS handling
 
-### Generic Over Specific
+### Hook Patterns
+- **Generic operations**: `useCreateObject`, `useFindObjects`, `useUpdateObject`, `useDeleteObject`
+- **State management**: Loading, error, and data states with abort capabilities
+- **Composability**: Hooks should be modular and combinable for complex operations
+- **Error boundaries**: Comprehensive error handling with meaningful messages
 
-- **Use generic hooks** (e.g., `useCreateObject`) instead of domain-specific ones (e.g., `useCreateProduct`)
-- **Adapt existing patterns** rather than creating new implementations
-- **Recognize common operations** across different domains and reuse them
+### Data Flow Patterns
+- **Context-driven**: Use AppContext for shared state (user, schemas) to avoid duplicate requests
+- **Schema reuse**: Always fetch schemas from context, not individual API calls
+- **Protected routes**: Initialize user and schema data at application startup
+- **Optimistic updates**: Design for immediate UI feedback with rollback capabilities
 
-### Data Operations
+## Key Constraints
 
-- Implement CRUD operations for collections
-- Handle complex querying with filtering, pagination, and sorting
-- Manage file uploads and downloads
-- Coordinate schema management and validation
+### Security Requirements
+- JWT tokens stored in secure, HTTP-only cookies
+- Automatic token refresh and invalidation handling
+- Proper authorization header management
+- Master key usage only for debugging routes
 
-### Security & Authentication
+### Error Handling Standards
+- Retry on 5xx errors with exponential backoff
+- Network timeout handling (30s default)
+- Graceful degradation on authentication failures
+- Meaningful error messages with context
 
-- Implement JWT-based authentication flows
-- Manage secure cookie storage and token lifecycle
-- Handle user registration, login, and logout
-- Ensure proper authorization headers and access control
+### Performance Considerations
+- Request cancellation via AbortController
+- Efficient query parameter handling
+- Minimal re-renders through proper dependency management
+- Connection pooling and request deduplication
 
-### Error Handling & Resilience
 
-- Implement comprehensive error handling patterns
-- Design retry mechanisms with exponential backoff
-- Handle network timeouts and connection failures
-- Provide graceful degradation and recovery strategies
 
----
+## Integration Patterns
 
-## 🏗 API Architecture
-
-### Base Configuration
-
-#### API Base URL
-
-```
-https://api.innque.com/v1
-```
-
-#### Required Headers
-
-```
-Content-Type: application/json
-```
-
-#### Optional Headers
-
-```
-X-Application-Id: your-application-id  // Only used when no JWT token is available
+### Context Integration
+```javascript
+// Always use context for shared data
+const { schemas } = useContext(AppContext);
+const schema = schemas.find(s => s.name === collection);
 ```
 
-#### Authentication Headers
-
-```
-Authorization: Bearer {jwt_token}  // For user-specific operations
-X-Master-Key: your-master-key      // For debugging only - bypasses security
-```
-
----
-
-## 📦 API Endpoints Reference
-
-### Collections API
-
-#### Create Object
-
-```
-POST /collections/{collection_name}
-Body: {object_data}
+### Protected Route Pattern
+```javascript
+// Initialize user and schemas at app startup
+const { user, setUser, setSchemas } = useContext(AppContext);
+// Fetch user → fetch schemas → render protected content
 ```
 
-#### Get All Objects
-
-```
-GET /collections/{collection_name}
-Query Parameters:
-  - where: JSON string (filtering conditions)
-  - limit: number (max results)
-  - skip: number (pagination offset)
-  - sort: JSON string (sorting criteria)
-  - includes: JSON string (array of related object names)
-  - keys: JSON string (array of field names to include)
+### Hook Composition
+```javascript
+// Combine hooks for complex operations
+const { create } = useCreateObject();
+const { update } = useUpdateObject();
+// Implement upsert logic by checking object.id
 ```
 
-#### Query Parameters Reference
+## API Endpoints
 
-##### Filtering (where parameter)
+### Collections
+- `POST /collections/{name}` - Create object
+- `GET /collections/{name}` - Find objects (with query params)
+- `GET /collections/{name}/{id}` - Get object
+- `PUT /collections/{name}/{id}` - Update object
+- `DELETE /collections/{name}/{id}` - Delete object
+- `GET /count/{name}` - Count objects
 
+### Authentication
+- `POST /signup` - User registration
+- `POST /signin` - User login
+- `GET /me` - Get current user
+- `POST /signout` - User logout
+
+### Files & Schemas
+- `POST /files/{filename}` - Upload file
+- `GET /files/{app-id}/{filename}` - Download file
+- `POST /schemas` - Create schema
+- `GET /schemas/{name}` - Get schema
+- `PUT /schemas/{name}` - Update schema
+- `DELETE /schemas/{name}` - Delete schema
+
+## Query Parameters
+
+### Filtering (`where`)
 ```json
-// Simple equality
-{"name": "sugar"}
-
-// Range queries
-{"price": {"$gt": 10, "$lt": 100}}
-// Array operations
-{"category": {"$in": ["Electronics", "Books"]}}
-// Complex queries
-{
-  "$and": [
-    {"price": {"$gte": 50}},
-    {"category": "Electronics"},
-    {"isActive": true}
-  ]
-}
+{"field": "value"}                    // Equality
+{"field": {"$gt": 10, "$lt": 100}}   // Range
+{"field": {"$in": ["a", "b"]}}       // Array
+{"$and": [{"a": 1}, {"b": 2}]}       // Complex
 ```
 
-##### Sorting (sort parameter)
-
+### Sorting (`sort`)
 ```json
-{
-  "created": -1, // Descending
-  "name": 1 // Ascending
-}
+{"field": 1}    // Ascending
+{"field": -1}   // Descending
 ```
 
-#### Get Object by ID
+### Pagination
+- `limit`: Maximum results
+- `skip`: Offset for pagination
+- `includes`: Related objects to include
+- `keys`: Specific fields to return
 
-```
-GET /collections/{collection_name}/{object_id}
-```
-
-#### Update Object
-
-```
-PUT /collections/{collection_name}/{object_id}
-Body: {updated_object_data}
-```
-
-#### Delete Object
-
-```
-DELETE /collections/{collection_name}/{object_id}
-```
-
-#### Count Objects
-
-```
-GET /count/{collection_name}
-Query Parameters:
-  - where: JSON string (filtering conditions)
-Response:
-{
-  "count": 10
-}
-```
-
-### Users API
-
-#### Sign Up
-
-```
-POST /signup
-Body: {
-  "username": "string",
-  "password": "string"
-}
-```
-
-#### Sign In
-
-```
-POST /signin
-Body: {
-  "username": "string",
-  "password": "string"
-}
-```
-
-#### Get Current User
-
-```
-GET /me
-Authorization: Bearer {jwt_token}
-```
-
-#### Sign Out
-
-```
-POST /signout
-Authorization: Bearer {jwt_token}
-```
-
-### Files API
-
-#### Upload File
-
-```
-POST /files/{filename}
-Content-Type: {file_content_type}
-Body: {file_blob}
-```
-
-#### Download File
-
-```
-GET /files/{application-id}/{filename}
-```
-
-### Schemas API
-
-#### Create Schema
-
-```
-POST /schemas
-Body: {schema_definition}
-```
-
-#### Get Schema
-
-```
-GET /schemas/{schema_name}
-```
-
-#### Get All Schemas
-
-```
-GET /schemas
-Query Parameters:
-  - where: JSON string (filtering conditions)
-```
-
-#### Update Schema
-
-```
-PUT /schemas/{schema_name}
-Body: {updated_schema_definition}
-```
-
-#### Delete Schema
-
-```
-DELETE /schemas/{schema_name}
-```
-
----
-
-## 🚨 Error Response Codes
-
-- **400**: Bad Request - Invalid request data
-- **401**: Unauthorized - Missing or invalid authentication
-- **403**: Forbidden - Insufficient permissions
-- **404**: Not Found - Resource doesn't exist
-- **500**: Internal Server Error - Server error
-
----
-
-## 🔧 Implementation Patterns
-
-### Modern API Client Implementation
+### API Client Implementation
 
 ```javascript
 //src/api.js
@@ -441,6 +301,7 @@ export const updateSchema = (schema, options) => request(`/schemas/${schema.coll
 export const deleteSchema = (collection, options) => request(`/schemas/${collection}`, { method: "DELETE", ...options });
 ```
 
+
 ### React Hook Pattern Implementation
 
 #### Object Hooks
@@ -497,38 +358,13 @@ export function useCreateObject() {
 }
 ```
 
-#### Upsert Object Hook
-
-```javascript
-    try {
-      let response;
-      // Check if this is an update (has id) or create (no id)
-      if (object && object.id) {
-        // Update existing object
-        response = await updateObject(collection, object, {
-          signal: abortControllerRef.current.signal,
-          upsert: true,
-          ...options,
-        });
-      } else {
-        // Create new object
-        response = await createObject(collection, object, {
-          signal: abortControllerRef.current.signal,
-          ...options,
-        });
-      }
-      setObject(response);
-      return response;
-    }
-```
-
 ### Directory Structure
 
 ```
 src/
-├── api.js   # Core API client with authentication and request handling
+├── api.js      # Core API client with authentication
 └── usecases/
-    ├── object/
+    ├── object/ # Generic CRUD operations
     │   ├── useCreateObject.js
     │   ├── useGetObject.js
     │   ├── useUpdateObject.js
@@ -536,70 +372,17 @@ src/
     │   ├── useFindObjects.js
     │   ├── useUpsertObject.js
     │   └── useCountObjects.js
-    ├── schema/
+    ├── schema/ # Schema management
     │   ├── useCreateSchema.js
     │   ├── useGetSchema.js
     │   ├── useFindSchemas.js
     │   ├── useUpdateSchema.js
     │   └── useDeleteSchema.js
-    ├── user/
+    ├── user/  # Authentication flows
     │   ├── useSignUp.js
     │   ├── useSignIn.js
     │   ├── useSignOut.js
     │   └── useGetCurrentUser.js
-    └── file/
+    └── file/ # File operations
         └── useUploadFile.js
-```
-
-**MainPage Initialization**: MainPage is responsible for initializing schemas and current user data when the application starts. This ensures all components have access to the necessary data through AppContext.
-
-**Schema Reuse Pattern**: Always get schemas from AppContext instead of individual API calls to ensure consistency across the entire application and avoid duplicate network requests.
-
-
-```javascript
-  const { schemas } = useContext(AppContext);
-  const schema = schemas.find(s => s.name === collection);
-```
-
-
-```javascript
-//src/pages/ProtectedRoute.jsx
-const ProtectedRoute = ({ children }) => {
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const { user, setUser, setSchemas } = useContext(AppContext);
-  const { get } = useGetCurrentUser();
-  const { find } = useFindSchemas();
-  useEffect(() => {
-    (async () => {
-      try {
-        if (!user && loading) {
-          const fetchedUser = await get();
-          if (fetchedUser) setUser(fetchedUser);
-        }
-        if (user) {
-          const schemas = await find({});
-          if (schemas) setSchemas(schemas);
-        }
-        setLoading(false);
-      } catch (_) {}
-    })();
-  }, []);
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner />
-      </div>
-    );
-  }
-  return user ? (
-    children
-  ) : (
-    <Navigate to="/signin" state={{ from: location }} replace />
-  );
-};
-```
-```javascript
-//src/App.jsx
-<Route path="/*" element={<ProtectedRoute><MainPage /></ProtectedRoute>} />
 ```

@@ -12,8 +12,6 @@ alwaysApply: false
 - **Touch-optimized**: Prioritize touch interactions and accessibility
 - **Content-driven**: Layout adapts based on content type and available width
 
----
-
 ## 🏗 Architectural Principles
 
 ### Mobile-First Design Foundation
@@ -43,10 +41,6 @@ alwaysApply: false
 - **Decision Framework**: Start with Tailwind → Extend with `@apply` when necessary → Use custom CSS only for truly global, non-component-specific styles
 - **Tailwind Opacity**: Instead of using `bg-opacity-50`, use `opacity-50` for better compatibility and consistency
 
----
-
----
-
 ## 🎨 Design Guidelines
 
 ### Design Pattern Selection Framework
@@ -67,15 +61,6 @@ The AI agent will analyze user requirements and automatically select the most ap
 **Metro / Fluent Design (Microsoft)**
 **Gamification UI**
 
-### Implementation Guidelines
-
-- **Design Consistency**: Once a design pattern is selected, maintain consistency throughout the application
-- **Accessibility First**: Ensure all design patterns meet WCAG guidelines regardless of aesthetic choice
-- **Performance Consideration**: Balance visual appeal with loading speed and responsiveness
-- **User Testing**: Design patterns should be validated against target user preferences
-
----
-
 ## 🎨 Icon Strategy
 
 ### Icon Selection Framework
@@ -86,8 +71,6 @@ The AI agent will analyze user requirements and automatically select the most ap
 - **Complex features**: SVG Assets for consistency and performance
 - **Brand elements**: Inline SVG for full control and scalability
 - **Quick prototypes**: Emoji for fast implementation
-
----
 
 ### Implementation Guidelines
 
@@ -105,8 +88,6 @@ The AI agent will analyze user requirements and automatically select the most ap
 3. **Use CSS transitions over JavaScript for smooth animations**
 4. **Maintain consistent design patterns across screen sizes**
 5. **Ensure consistent text and background colors across mobile and desktop**
-
----
 
 ## 🔧 JavaScript Implementation Details
 
@@ -126,7 +107,7 @@ function useScreenSize() {
 ```javascript
 //src/components/MainLayout.jsx
 const Context = createContext();
-function MainLayout({ children,menus }) {
+function MainLayout({ children, menus }) {
   const isMobile = useScreenSize();
   const [show, setShow] = useState(!isMobile);
   useEffect(() => {
@@ -401,8 +382,6 @@ function Sidebar({
 ## 🧪 Implementation Guidelines
 
 ### NavSidebar Component Implementation
-
-- **Menu item click behavior**: When menu items are clicked, set show to false to close the sidebar on mobile devices
 
 ```javascript
 function NavSidebar({ isMobile, setShow }) {
