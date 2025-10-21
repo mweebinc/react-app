@@ -1,0 +1,451 @@
+
+# LLM Coding Agent — Implementation Requirements Mode
+
+## Objective
+When analyzing an existing project, generate an **implementation-focused requirements document** that captures the core technical patterns, APIs, and actual code snippets that define how the system works. This document enables an autonomous LLM to understand and extend the project by showing real implementation patterns, not just abstract concepts.
+
+## Core Philosophy
+- **Show the actual plumbing** - Document how core features are wired together with real code examples
+- **Skip generic features** - Ignore standard auth/CRUD unless they use unique patterns
+- **Focus on domain-specific magic** - The unique technical solutions that make this project work
+- **Provide working examples** - Code snippets that can be copied and modified
+
+## Analysis Framework
+
+### Step 1: Identify Core Technical Pattern
+For each project type, identify the fundamental technical mechanism:
+- **VS Code Extension**: `package.json` → `extension.js` → Webview/Commands → API hooks
+- **MCP Server**: Protocol SDK → Message handlers → Tool registration → Client communication
+- **VPN App**: TUN interface → Packet capture → Tunnel protocol → Packet injection
+- **LLM Agent**: API client → Message loop → Tool parsing → State management
+- **Electron App**: Main/Renderer split → IPC channels → Native API access
+- **Game Engine**: Game loop → Entity system → Rendering pipeline → Input handling
+- **Compiler**: Lexer → Parser → AST → Code generation
+- **Database**: Storage engine → Query processor → Transaction manager → Replication
+
+### Step 2: Extract Implementation Patterns
+
+#### A. Entry Points & Initialization
+Show the actual bootstrap code:
+```javascript
+// Example: VS Code Extension activation
+exports.activate = function(context) {
+    const disposable = vscode.commands.registerCommand('myext.openPanel', () => {
+        const panel = vscode.window.createWebviewPanel(
+            'myPanel',
+            'My Panel',
+            vscode.ViewColumn.One,
+            { enableScripts: true }
+        );
+        panel.webview.html = getWebviewContent();
+    });
+    context.subscriptions.push(disposable);
+}
+```
+
+#### B. Core Data Flow
+Document how data moves through the system:
+```javascript
+// Example: MCP Server request handling
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+        tools: [
+            {
+                name: "search",
+                description: "Search the web",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        query: { type: "string" }
+                    }
+                }
+            }
+        ]
+    };
+});
+```
+
+#### C. Critical Integration Points
+Show exactly how external systems connect:
+```python
+# Example: VPN TUN interface setup
+tun = TunInterface('/dev/net/tun')
+tun.open('tun0', IFF_TUN | IFF_NO_PI)
+while True:
+    packet = tun.read(1500)  # Read from TUN
+    encrypted = tunnel.encrypt(packet)
+    server_socket.send(encrypted)  # Send to VPN server
+    
+    response = server_socket.recv(1500)
+    decrypted = tunnel.decrypt(response)
+    tun.write(decrypted)  # Write back to TUN
+```
+
+## Output Format
+
+### 1. Project Identity & Core Mechanism
+```markdown
+## [Project Name] - Core Implementation Guide
+
+**Core Technical Pattern**: [e.g., "WebSocket-based real-time sync engine"]
+**Primary Dependencies**: [Actual packages with versions that matter]
+**Key Files**: [The 3-5 files that contain the magic]
+
+**How It Actually Works**: 
+[2-3 sentences explaining the fundamental mechanism with technical terms]
+```
+
+### 2. Technical Architecture (With Code)
+```markdown
+## Architecture Components
+
+### Component A: [Name]
+**Purpose**: [What it does]
+**Location**: `src/core/[file].js`
+**Key Pattern**:
+```javascript
+// Actual code showing the pattern
+class CoreEngine {
+    constructor() {
+        this.state = new StateManager();
+        this.pipeline = [];
+    }
+    
+    process(input) {
+        return this.pipeline.reduce((acc, fn) => fn(acc), input);
+    }
+}
+```
+```
+
+### 3. Critical Implementation Flows
+
+For each core flow, show the actual code path:
+
+```markdown
+## Flow: [Name]
+
+### 1. Entry Point
+```javascript
+// Where it starts (e.g., API endpoint, event listener)
+app.post('/api/process', async (req, res) => {
+    const job = await queue.add('process', req.body);
+```
+
+### 2. Processing
+```javascript
+// The core logic
+queue.process('process', async (job) => {
+    const data = job.data;
+    const result = await pipeline.run(data);
+    await cache.set(job.id, result);
+    return result;
+});
+```
+
+### 3. Output/Side Effects
+```javascript
+// What happens with the result
+job.on('completed', (result) => {
+    websocket.emit('result', { id: job.id, data: result });
+    metrics.record('processing.complete', 1);
+});
+```
+```
+
+### 4. Configuration & Setup Requirements
+
+Show actual config files and setup steps:
+
+```markdown
+## Required Configuration
+
+### package.json (for Node projects)
+```json
+{
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [{
+            "command": "myext.start",
+            "title": "Start My Extension"
+        }]
+    },
+    "activationEvents": ["onCommand:myext.start"]
+}
+```
+
+### Environment Setup
+```bash
+# Actual commands needed
+npm install @modelcontextprotocol/sdk express
+export API_KEY="your-key-here"
+```
+```
+
+### 5. State Management Pattern
+
+Show how the project manages state:
+
+```markdown
+## State Management
+
+**Pattern Used**: [e.g., Event Sourcing, Redux-style, Direct mutation]
+
+```javascript
+// Example implementation
+class StateManager {
+    constructor() {
+        this.state = {};
+        this.listeners = [];
+    }
+    
+    dispatch(action) {
+        this.state = reducer(this.state, action);
+        this.listeners.forEach(l => l(this.state));
+    }
+}
+```
+```
+
+### 6. Protocol/API Contracts
+
+Document the actual message formats:
+
+```markdown
+## Protocol Details
+
+### Request Format
+```typescript
+interface Request {
+    jsonrpc: "2.0";
+    method: string;
+    params?: any;
+    id: string | number;
+}
+```
+
+### Tool Response
+```typescript
+interface ToolResponse {
+    content: Array<{
+        type: "text" | "image";
+        text?: string;
+        data?: string;
+        mimeType?: string;
+    }>;
+}
+```
+```
+
+### 7. Extension Points
+
+Show how to add new features:
+
+```markdown
+## Adding New Features
+
+### Adding a New Command (VS Code Extension)
+```javascript
+// 1. Register in package.json contributes
+// 2. Add handler in extension.js:
+context.subscriptions.push(
+    vscode.commands.registerCommand('myext.newFeature', async () => {
+        // Implementation
+    })
+);
+```
+
+### Adding a New Tool (MCP Server)
+```javascript
+// 1. Define tool in tools array
+// 2. Add handler:
+if (request.params.name === "newTool") {
+    return { content: [{ type: "text", text: result }] };
+}
+```
+```
+
+### 8. Common Pitfalls & Solutions
+
+```markdown
+## Implementation Gotchas
+
+### Issue: [Common problem]
+**Symptom**: [What goes wrong]
+**Root Cause**: [Why it happens]
+**Solution**:
+```javascript
+// Wrong way
+const data = await fetch(url);
+
+// Right way
+const data = await fetch(url).catch(err => {
+    console.error('Fetch failed:', err);
+    return fallbackData;
+});
+```
+```
+
+## Domain-Specific Templates
+
+### For LLM Agents
+```markdown
+## LLM Integration Pattern
+
+### Message Loop
+```javascript
+async function runAgent(prompt) {
+    const messages = [{ role: "system", content: SYSTEM_PROMPT }];
+    messages.push({ role: "user", content: prompt });
+    
+    while (true) {
+        const response = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages,
+            tools: TOOL_DEFINITIONS
+        });
+        
+        if (response.choices[0].finish_reason === "tool_calls") {
+            const toolResult = await executeTool(response.choices[0].message.tool_calls[0]);
+            messages.push({ role: "tool", content: toolResult });
+        } else {
+            return response.choices[0].message.content;
+        }
+    }
+}
+```
+
+### Tool Definition
+```javascript
+const TOOL_DEFINITIONS = [{
+    type: "function",
+    function: {
+        name: "execute_code",
+        description: "Execute Python code",
+        parameters: {
+            type: "object",
+            properties: {
+                code: { type: "string" }
+            }
+        }
+    }
+}];
+```
+```
+
+### For Real-time Systems (WebSocket/WebRTC)
+```markdown
+## Real-time Communication Pattern
+
+### Server Setup
+```javascript
+const io = require('socket.io')(server);
+const rooms = new Map();
+
+io.on('connection', (socket) => {
+    socket.on('join', (roomId) => {
+        socket.join(roomId);
+        if (!rooms.has(roomId)) {
+            rooms.set(roomId, new RoomState());
+        }
+    });
+    
+    socket.on('update', (data) => {
+        const room = rooms.get(data.roomId);
+        room.applyUpdate(data);
+        socket.to(data.roomId).emit('state', room.getState());
+    });
+});
+```
+```
+
+### For Native Integrations
+```markdown
+## Native Bridge Pattern
+
+### Electron IPC
+```javascript
+// Main process
+ipcMain.handle('read-file', async (event, path) => {
+    return await fs.promises.readFile(path, 'utf-8');
+});
+
+// Renderer process  
+const content = await ipcRenderer.invoke('read-file', '/path/to/file');
+```
+
+### React Native Bridge
+```javascript
+// Native Module
+@ReactMethod
+public void showToast(String message) {
+    Toast.makeText(getReactApplicationContext(), message, Toast.LENGTH_SHORT).show();
+}
+
+// JavaScript
+import { NativeModules } from 'react-native';
+NativeModules.ToastModule.showToast('Hello');
+```
+```
+
+## Quality Checklist
+
+- [ ] **Shows real, working code** from the actual project
+- [ ] **Focuses on unique patterns**, not generic CRUD
+- [ ] **Includes error handling patterns** used in the project
+- [ ] **Documents the actual APIs/SDKs** with version specifics
+- [ ] **Shows the data flow** with concrete examples
+- [ ] **Explains state management** approach with code
+- [ ] **Includes setup/config** that's often missed
+- [ ] **Has copy-paste ready examples** for common extensions
+
+## Analysis Process
+
+1. **Scan for Entry Points**: Find main(), activate(), index.js, app.py
+2. **Trace Core Flows**: Follow one complete operation end-to-end
+3. **Identify Key Patterns**: Look for repeated architectural decisions
+4. **Extract Magic Code**: Find the 20% of code doing 80% of work
+5. **Document Integration Points**: How does it talk to external systems?
+6. **Show Extension Patterns**: How to add new features using existing patterns
+
+## Examples of Core Patterns by Project Type
+
+### VS Code Extension Core
+- Command registration in package.json
+- Activation events and context
+- Webview communication via postMessage
+- Language server protocol integration
+
+### MCP Server Core  
+- Tool registration and schemas
+- Request/response handling
+- Streaming vs non-streaming responses
+- Resource management patterns
+
+### VPN Application Core
+- TUN/TAP interface management
+- Packet interception and injection
+- Encryption tunnel establishment
+- Routing table manipulation
+
+### LLM Agent Core
+- Message history management
+- Tool call parsing and execution
+- Context window management
+- Retry and fallback strategies
+
+### Compiler Core
+- Token stream generation
+- AST node visitor pattern
+- Symbol table management
+- Code emission templates
+
+## Output File: `implementation.md`
+
+The final document should be a **practical cookbook** that an LLM can follow to:
+1. Understand how the core features actually work
+2. Extend the project using the same patterns
+3. Debug common issues
+4. Add new features that fit the architecture
+
+Focus on **showing, not telling** - every concept should have accompanying code that demonstrates the actual implementation.
